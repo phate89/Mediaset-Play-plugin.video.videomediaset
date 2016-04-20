@@ -1,28 +1,9 @@
 ﻿# -*- coding: utf-8 -*-
-import os
-import sys
-import xbmc
-import xbmcgui
-import xbmcplugin
-import xbmcaddon
-import urllib
-import urlparse
 from resources.lib.mediaset import Mediaset
+from phate89lib import kodiutils, staticutils
 
-# plugin constants
-__plugin__ = "plugin.video.videomediaset"
-__author__ = "aracnoz"
-
-Addon = xbmcaddon.Addon(id=__plugin__)
-
-# plugin handle
-handle = int(sys.argv[1])
-
-# utility functions
-def parameters_string_to_dict(parameters):
-    paramDict = dict(urlparse.parse_qsl(parameters[1:]))
-    return paramDict
-
+mediaset = Mediaset()
+mediaset.log = kodiutils.log
 def pulisci_cerca(s):
     s = s.lower()
     s = s.replace("à","a")
@@ -35,191 +16,170 @@ def pulisci_cerca(s):
     s = s.replace("'","-")
     return s
 
-def parameters (p):
-    return sys.argv[0] + '?' + urllib.urlencode(p)
-
-def addDir (s,p):
-    item = xbmcgui.ListItem(s)
-    return xbmcplugin.addDirectoryItem(handle=handle, url=parameters(p), listitem=item, isFolder=True)
-
-def addDir_ep (s,t,p):
-    item = xbmcgui.ListItem("[COLOR blue]"+s+"[/COLOR]",thumbnailImage=t)
-    return xbmcplugin.addDirectoryItem(handle=handle, url=parameters(p), listitem=item, isFolder=False)
-
 def stamp_ep(ep):
-    addDir_ep(ep["titolo"],ep["thumbs"],{'mode':'playMediaset','title':ep["titolo"],'stream_id':ep["id"],'thumbs':ep["thumbs"],'desc':ep["desc"]})
+    ep['mediatype'] = 'video'
+    kodiutils.addListItem("[COLOR blue]"+ep["title"]+"[/COLOR]", {'mode':'playMediaset','id':ep["id"]}, thumb=ep["thumbs"],videoInfo=ep,isFolder=False)
 
 def stamp_live(ch):
-    addDir_ep(ch["titolo"],ch["thumbs"],{'mode':'playLive','title':ch["titolo"],'stream_url':ch["url"],'thumbs':ch["thumbs"],'desc':ch["desc"]})
-
-def endDir():
-    return xbmcplugin.endOfDirectory(handle=handle, succeeded=True)
-
-# UI builder functions
+    ch['mediatype'] = 'video'
+    kodiutils.addListItem("[COLOR blue]"+ch["title"]+"[/COLOR]", {'mode':'playLive','stream_url':ch["url"]}, thumb=kodiutils.IMAGE_PATH_T + ch["thumbs"],videoInfo=ch,isFolder=False)
 
 def root():
-    addDir("Canali Live",{'mode':'canali_live'})
-    addDir("Elenco programmi",{'mode':'elenco_programmi'})
-    addDir("Ultime puntate News",{'mode':'ultime_puntate','prog_tipo':'news'})
-    addDir("Ultime puntate Sport",{'mode':'ultime_puntate','prog_tipo':'sport'})
-    addDir("Ultime puntate Intrattenimento",{'mode':'ultime_puntate','prog_tipo':'intrattenimento'})
-    addDir("Ultime puntate Fiction",{'mode':'ultime_puntate','prog_tipo':'fiction'})
-    addDir("Ultime puntate Elenco canali",{'mode':'ultime_puntate_canali'})
-    addDir("Ultime Sport Mediaset",{'mode':'sportmediaset'})
-    addDir("Più visti Ieri",{'mode':'piuvisti','range_visti':'ieri'})
-    addDir("Più visti Settimana",{'mode':'piuvisti','range_visti':'settimana'})
-    addDir("Più visti Mese",{'mode':'piuvisti','range_visti':'mese'})
-    addDir("Cerca...",{'mode':'cerca'})
-    endDir()
+    kodiutils.addListItem("Canali Live",{'mode':'canali_live'})
+    kodiutils.addListItem("Elenco programmi",{'mode':'elenco_programmi'})
+    kodiutils.addListItem("Ultime puntate News",{'mode':'ultime_puntate','prog_tipo':'news'})
+    kodiutils.addListItem("Ultime puntate Sport",{'mode':'ultime_puntate','prog_tipo':'sport'})
+    kodiutils.addListItem("Ultime puntate Intrattenimento",{'mode':'ultime_puntate','prog_tipo':'intrattenimento'})
+    kodiutils.addListItem("Ultime puntate Fiction",{'mode':'ultime_puntate','prog_tipo':'fiction'})
+    kodiutils.addListItem("Ultime puntate Elenco canali",{'mode':'ultime_puntate_canali'})
+    kodiutils.addListItem("Ultime Sport Mediaset",{'mode':'sportmediaset'})
+    kodiutils.addListItem("Più visti Ieri",{'mode':'piuvisti','range_visti':'ieri'})
+    kodiutils.addListItem("Più visti Settimana",{'mode':'piuvisti','range_visti':'settimana'})
+    kodiutils.addListItem("Più visti Mese",{'mode':'piuvisti','range_visti':'mese'})
+    kodiutils.addListItem("Cerca...",{'mode':'cerca'})
+    kodiutils.endScript()
 
 def sportmediaset_root():
-    addDir("Highlights",{'mode':'sportmediaset','progsport_tipo':'tutti_i_gol'})
-    addDir("Calcio",{'mode':'sportmediaset','progsport_tipo':'calcio'})
-    addDir("Champions League",{'mode':'sportmediaset','progsport_tipo':'champions_league'})
-    addDir("Europa League",{'mode':'sportmediaset','progsport_tipo':'europa_league'})
-    addDir("Altri sport",{'mode':'sportmediaset','progsport_tipo':'altrisport'})
-    addDir("Motori",{'mode':'sportmediaset','progsport_tipo':'motori'})
-    endDir()
+    kodiutils.addListItem("Highlights",{'mode':'sportmediaset','progsport_tipo':'/tutti_i_gol/'})
+    kodiutils.addListItem("Calcio",{'mode':'sportmediaset','progsport_tipo':'/calcio/'})
+    kodiutils.addListItem("Champions League",{'mode':'sportmediaset','progsport_tipo':'/champions_league/'})
+    kodiutils.addListItem("Europa League",{'mode':'sportmediaset','progsport_tipo':'/europa_league/'})
+    kodiutils.addListItem("Superbike",{'mode':'sportmediaset','progsport_tipo':'/superbike/'})
+    kodiutils.addListItem("Altri sport",{'mode':'sportmediaset','progsport_tipo':'/altrisport/'})
+    kodiutils.addListItem("Motori",{'mode':'sportmediaset','progsport_tipo':'/motori/'})
+    kodiutils.endScript()
 
 def puntate_canali_root():
-    addDir("Italia 1",{'mode':'ultime_puntate','prog_tipo':' i1 '})
-    addDir("Canale 5",{'mode':'ultime_puntate','prog_tipo':' c5 '})
-    addDir("Rete 4",{'mode':'ultime_puntate','prog_tipo':' r4 '})
-    addDir("Italia 2",{'mode':'ultime_puntate','prog_tipo':' i2 '})
-    addDir("La 5",{'mode':'ultime_puntate','prog_tipo':' ka '})
-    endDir()
+    kodiutils.addListItem("Italia 1",{'mode':'ultime_puntate','prog_tipo':'I1'}, thumb=kodiutils.IMAGE_PATH_T + "Italia_1.png")
+    kodiutils.addListItem("Canale 5",{'mode':'ultime_puntate','prog_tipo':'C5'}, thumb=kodiutils.IMAGE_PATH_T + "Canale_5.png")
+    kodiutils.addListItem("Rete 4",{'mode':'ultime_puntate','prog_tipo':'R4'}, thumb=kodiutils.IMAGE_PATH_T + "Rete_4.png")
+    kodiutils.addListItem("Italia 2",{'mode':'ultime_puntate','prog_tipo':'I2'}, thumb=kodiutils.IMAGE_PATH_T + "Italia_2.png")
+    kodiutils.addListItem("La 5",{'mode':'ultime_puntate','prog_tipo':'KA'}, thumb=kodiutils.IMAGE_PATH_T + "La_5.png")
+    kodiutils.addListItem("TGCOM24",{'mode':'ultime_puntate','prog_tipo':'KF'}, thumb=kodiutils.IMAGE_PATH_T + "TGCOM24.png")
+    kodiutils.addListItem("Iris",{'mode':'ultime_puntate','prog_tipo':'KI'}, thumb=kodiutils.IMAGE_PATH_T + "Iris.png")
+    kodiutils.endScript()
 
 def canali_live_root():
-    mediaset = Mediaset()
+    kodiutils.setContent('videos')
     for ch in mediaset.get_canali_live():
         stamp_live(ch)
-    endDir()
+    kodiutils.endScript()
 
 def elenco_programmi_root():
-    mediaset = Mediaset()
     for lettera in mediaset.get_prog_root():
-        addDir(lettera["index"],{'mode':'elenco_programmi','prog_id':lettera["index"]})
-    endDir()
+        kodiutils.addListItem(lettera["index"],{'mode':'elenco_programmi','prog_id':lettera["index"]})
+    kodiutils.endScript()
 
 def elenco_programmi_list(progId):
-    mediaset = Mediaset()
+    kodiutils.setContent('videos')
     for lettera in mediaset.get_prog_root():
         if lettera['index'] == progId:
             for programma in lettera["program"]:    
-                addDir(programma["label"],{'mode':'elenco_programmi','prog_id':lettera["index"],'prog_url':programma["url"].replace("archivio-news.shtml","archivio-video.shtml")})
-    endDir()
+                kodiutils.addListItem(programma["label"],{'mode':'elenco_programmi','prog_url':programma["url"]}, thumb=programma['thumbnail'])
+    kodiutils.endScript()
 
-def elenco_programmi_epList(progId,progUrl):
-    mediaset = Mediaset()
-    for ep in mediaset.get_prog_epList(progUrl):
-        stamp_ep(ep)
+def elenco_programmi_groupList(progUrl):
+    for group in mediaset.get_url_groupList(progUrl):
+        kodiutils.addListItem(group["title"], {'mode':'elenco_programmi', 'group_url': group["url"]})
     for season in mediaset.get_prog_seasonList(progUrl):
-        addDir(season["titolo"],{'mode':'elenco_programmi','prog_id':progId,'prog_url':season["url"]})
-    endDir()
+        kodiutils.addListItem(season["title"],{'mode':'elenco_programmi','prog_url':season["url"]})
+    kodiutils.endScript()
+
+def elenco_programmi_epList(groupUrl):
+    kodiutils.setContent('videos')
+    for ep in mediaset.get_prog_epList(groupUrl):
+        stamp_ep(ep)
+    kodiutils.endScript()
 
 def sportmediaset_epList(progsportTipo):
-    mediaset = Mediaset()
-    for ep in mediaset.get_sport_epList():
-        if (ep["tipo"].lower().find(progsportTipo) > 0): stamp_ep(ep)        
-    endDir()
+    kodiutils.setContent('videos')
+    for ep in mediaset.get_global_epList(2):
+        if (progsportTipo in ep["url"]): stamp_ep(ep)        
+    kodiutils.endScript()
 
 def puntate_epList(progTipo):
-    mediaset = Mediaset()
-    for ep in mediaset.get_global_epList(0,0):
-        if (ep["tipo"].lower().find(progTipo) > 0): stamp_ep(ep)
-    endDir()
+    kodiutils.setContent('videos')
+    for ep in mediaset.get_global_epList(0):
+        if (progTipo in ep["tipo"]): stamp_ep(ep)
+    kodiutils.endScript()
 
 def piuvisti_epList(rangeVisti):
-    mediaset = Mediaset()
+    kodiutils.setContent('videos')
     for ep in mediaset.get_global_epList(1,rangeVisti):
         stamp_ep(ep)
-    endDir()
+    kodiutils.endScript()
 
 def cerca():
-    kb = xbmc.Keyboard()
+    kodiutils.setContent('videos')
+    kb = kodiutils.getKeyboard()
     kb.setHeading("Cerca un programma")
     kb.doModal()
     if kb.isConfirmed():
         text = kb.getText()
         text = pulisci_cerca(text)
-        mediaset = Mediaset()
         for lettera in mediaset.get_prog_root():
             for programma in lettera["program"]:
                 if (programma["mc"].find(text) > 0):
-                    addDir(programma["label"],{'mode':'elenco_programmi','prog_id':lettera["index"],'prog_url':programma["url"].replace("archivio-news.shtml","archivio-video.shtml")})
-    endDir()
+                    kodiutils.addListItem(programma["label"],{'mode':'elenco_programmi','prog_url':programma["url"]}, thumb=programma['thumbnail'])
+    kodiutils.endScript()
 
-def playMediaset(title,streamId,thumbs,desc):
-    mediaset = Mediaset()
+def playMediaset(streamId):
     url = mediaset.get_stream(streamId)
+    if (url):
+        # Play the item
+        if ("mp4" in url): kodiutils.setResolvedUrl(url["mp4"])
+        elif ("f4v" in url): kodiutils.setResolvedUrl(url["f4v"])
+        elif ("wmv" in url): kodiutils.setResolvedUrl(url["wmv"])
+    kodiutils.setResolvedUrl(solved=False)
 
+def playLive(streamUrl):
     # Play the item
-    item=xbmcgui.ListItem(title, thumbnailImage=thumbs)
-    item.setInfo(type="Video", infoLabels={"Title": title, "Plot":desc})
-
-    if (url["mp4"] != ""): stream = url["mp4"]
-    else: stream = url["wmv"]
-
-    print "videomediaset: play %s" % stream
-    xbmc.Player().play(stream,item)
-
-def playLive(title,streamUrl,thumbs,desc):
-    # Play the item
-    item=xbmcgui.ListItem(title, thumbnailImage=thumbs)
-    item.setInfo(type="Video", infoLabels={"Title": title, "Plot":desc})
-
-    print "videomediaset: play %s" % streamUrl
-    xbmc.Player().play(streamUrl,item)
+    kodiutils.setResolvedUrl(streamUrl)
 
 # parameter values
-params = parameters_string_to_dict(sys.argv[2])
+params = staticutils.getParams()
 mode = str(params.get("mode", ""))
 progId = str(params.get("prog_id", ""))
 progUrl = str(params.get("prog_url", ""))
+groupUrl = str(params.get("group_url", ""))
 progTipo = str(params.get("prog_tipo", ""))
 progsportTipo = str(params.get("progsport_tipo", ""))
 title = str(params.get("title", ""))
-streamId = str(params.get("stream_id", ""))
+streamId = str(params.get("id", ""))
 streamUrl = str(params.get("stream_url", ""))
 thumbs = str(params.get("thumbs", ""))
 desc = str(params.get("desc", ""))
 rangeVisti = str(params.get("range_visti", ""))
 
-if mode == "canali_live":
-    canali_live_root()
-
-elif mode == "elenco_programmi":
-    if progId == "":
-        elenco_programmi_root()
-    elif progUrl == "":
-        elenco_programmi_list(progId)
-    else:
-        elenco_programmi_epList(progId,progUrl)
-
-elif mode == "sportmediaset":
-    if progsportTipo == "":
-        sportmediaset_root()
-    else:
-        sportmediaset_epList(progsportTipo)
-
-elif mode == "ultime_puntate":
-    puntate_epList(progTipo)
-
-elif mode == "ultime_puntate_canali":
-    puntate_canali_root()
-
-elif mode == "piuvisti":
-    piuvisti_epList(rangeVisti)
-
-elif mode == "cerca":
-    cerca()
-
-elif mode == "playMediaset":
-    playMediaset(title, streamId, thumbs, desc)
-
-elif mode == "playLive":
-    playLive(title, streamUrl, thumbs, desc)
-
+if 'mode' in params:
+    if params['mode'] == "canali_live":
+        canali_live_root()
+    elif params['mode'] == "elenco_programmi":
+        if 'prog_id' in params:
+            elenco_programmi_list(params['prog_id'])
+        elif 'prog_url' in params:
+            elenco_programmi_groupList(params['prog_url'])
+        elif 'group_url' in params:
+            elenco_programmi_epList(params['group_url'])
+        else:
+            elenco_programmi_root()
+    elif params['mode'] == "sportmediaset":
+        if 'progsport_tipo'in params:
+            sportmediaset_epList(params['progsport_tipo'])
+        else:
+            sportmediaset_root()
+    elif params['mode'] == "ultime_puntate":
+        puntate_epList(params['prog_tipo'])
+    elif params['mode'] == "ultime_puntate_canali":
+        puntate_canali_root()
+    elif params['mode'] == "piuvisti":
+        piuvisti_epList(params['range_visti'])
+    elif params['mode'] == "cerca":
+        cerca()
+    elif params['mode'] == "playMediaset":
+        playMediaset(params['id'])
+    elif params['mode'] == "playLive":
+        playLive(params['stream_url'])
 else:
     root()
 

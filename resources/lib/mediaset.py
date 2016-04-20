@@ -1,172 +1,134 @@
-import urllib
-import urllib2
-import json
+from phate89lib import rutils
 import re
 import math
-from bs4 import BeautifulSoup
 
-class Mediaset:
+class Mediaset(rutils.RUtils):
 
-    def get_prog_root(self):
+    USERAGENT="VideoMediaset Kodi Addon"
     
-        url = "http://www.video.mediaset.it/programma/game15.json"
-        data = json.load(urllib2.urlopen(url))
+    def get_prog_root(self):
+        self.log('Trying to get the program list', 4)
+        url = "http://www.video.mediaset.it/programma/progr_archivio.json"
+        data = self.getJson(url)
         return data["programmi"]["group"]
 
-    def get_prog_epList(self, url):
+    def get_url_groupList(self,url):
+        self.log('Trying to get the groups from program url ' + url, 4)
+        if not url.startswith("http"):
+            url="http://www.video.mediaset.it"+url
+        url=url.replace("archivio-news.shtml","archivio-video.shtml")
+        soup=self.getSoup(url)
+        container=soup.find("div", class_="main-container")
+        subparts=container.find_all('section')
+        elements = []
+        for subpart in subparts:
+            name = subpart.find('h2')
+            if name and name.text.strip():
+                data=subpart.find('div')
+                if data:
+                    elements.append({'title': name.text.strip(), 
+                                     'url': "http://www.video.mediaset.it/{type}/{area}/{box}.shtml".format(type=data['data-type'],area=data['data-area'],box=data['data-box'])})
+        return elements
 
-        arrdata = []
-        url = url.replace("http://www.video.mediaset.it","")
-        url = "http://www.video.mediaset.it%s" % (url)
-        response = urllib2.urlopen(url)
-        html = response.read()
-        response.close()
-
-        matches = re.search(r'<div class=.+video-([fF]ull|fep).+js_boxvideo.+data-area="(.+)".+data-box="(.+)".+data-items="(.+)".+data-strip=".+_(.+)".+data-template.+data-type="(.+)">',html)
-        try:
-            programma = matches.group(2)
-            stagione = matches.group(3)
-            maxres = int(matches.group(4))
-            strip = matches.group(5)
-            tipo = matches.group(6)
-            
-        except:
-            return arrdata
-
+    def get_prog_epList(self,url):
+        self.log('Trying to get the episodes from group url ' + url, 4)
         totres = 0
         count = 0
         page = 1
-        totpage = 0
-        url = "http://www.video.mediaset.it/%s/%s/%s.shtml" % (tipo,programma,stagione)
-
-        while (count < maxres):
-            nurl = "%s?page=%s&dim=%s" % (url,page,strip)
-            response = urllib2.urlopen(nurl)
-            html = response.read()
-            response.close()
-            if (totres == 0):
-                try:
-                    matches = re.search(r'<div class="box.+data-maxitem="([0-9]+)">',html)
-                    totres = int(matches.group(1))
-                    maxres = totres
-                    totpage = math.ceil(float(totres) / float(strip))
-                except:
-                    break
-
-            matches = re.findall(r'<div class="box.+data-id="([^"]+)"[\s\S]*?<figure class="imgBox[\s\S]*?<a data-type.+title="([^"]+)".+href="([^"]+)".+data-src="([^"]+)"[\s\S]*?<p class="descr">([\s\S]*?)<',html)
-            for res in matches:
-                
-                tmp = str(BeautifulSoup(res[1]))
-                a = {'id': res[0],'titolo':tmp,'thumbs':res[3].replace("176x99","640x360"),'desc':res[4]}
-                arrdata.append(a);
-                count = count +1
-
-            page = page +1
-            if page > totpage: break;
+        arrdata=[]
+        maxpage = 200
+        while (page < maxpage):
+            nurl = "{url}?page={page}".format(url=url,page=page)
+            soup = self.getSoup(nurl)
+            videos = soup.find_all('div',class_='box')
+            if videos:
+                for video in videos:
+                    if totres == 0 and video.has_attr('data-maxitem'):
+                        totres = float(video['data-maxitem'])
+                        maxpage = totres
+                        totpage = math.ceil(totres / 2)
+                    img = video.find('img')
+                    p = video.find('p')
+                    arrdata.append({'id': video['data-id'],'title':img['alt'].encode('utf-8'),'thumbs':img['data-src'].replace("176x99","640x360"),'plot':p.text.strip().encode('utf-8')});
+            page = page + 1
 
         return arrdata
 
-    def get_prog_seasonList(self, url):
-
+    def get_prog_seasonList(self,url):
+        self.log('Trying to get the seasons from program url ' + url, 4)
+        if not url.startswith("http"):
+            url="http://www.video.mediaset.it"+url
+        url=url.replace("archivio-news.shtml","archivio-video.shtml")
+        soup = self.getSoup(url)
         arrdata = []
-        url = url.replace("http://www.video.mediaset.it","")
-        url = "http://www.video.mediaset.it%s" % (url)
-        response = urllib2.urlopen(url)
-        html = response.read()
-        response.close()
-        matches = re.search(r'href="#">Stagione</a>[\s\S]*?<ul>([\s\S]*?)</ul>',html)
-        try:
-            seasonHtml = matches.group(1)
-        except:
-            return arrdata
-        
-
-        matches = re.findall(r'<li>[\s\S]*?<a href="([^"]+)".+title="([^"]+)"',seasonHtml)
-
-        for res in matches:
-                
-            tmp = str(BeautifulSoup(res[1]))
-            a = {'url': res[0],'titolo':tmp}
-            arrdata.append(a)
-
+        container=soup.find("li", class_="season clearfix")
+        if container:
+            links = container.find_all("a")
+            if links:
+                for link in links:
+                    if not link.has_attr("class"):
+                        arrdata.append({"title": link.text.strip().encode('utf-8'), "url": link['href']})
         return arrdata
 
-    def get_global_epList(self,mode,range):
-
-        arrdata = []
+    def get_global_epList(self,mode,range=0):
+        self.log('Trying to get episodes with mode ' + str(mode), 4)
         if mode == 0: 
             url = "http://www.video.mediaset.it/bacino/bacinostrip_1.shtml?page=all"
         elif mode == 1:
-            url = "http://www.video.mediaset.it/piu_visti/piuvisti-%s.shtml?page=all" % range
+            url = "http://www.video.mediaset.it/piu_visti/piuvisti-{range}.shtml?page=all".format(range=range)
+        elif mode == 2:
+            url = "http://www.video.mediaset.it/bacino/bacinostrip_5.shtml?page=all"
 
-        response = urllib2.urlopen(url)
-        html = response.read()
-        response.close()
-      
-        matches = re.findall(r'<div class="box ([^"]+)"[\s\S]*?<figure class="imgBox[\s\S]*?<a data-type.+title="([^"]+)".+href=.+full.+([0-9][0-9][0-9][0-9][0-9][0-9]).+html".+data-src="([^"]+)"[\s\S]*?<h3 class="brand">[\s\S]*?title="([^"]+)"[\s\S]*?<p class="descr">([\s\S]*?)<',html)
-        for res in matches:
-            
-            tmp = "%s - %s" % (res[4],res[1])    
-            tmp = str(BeautifulSoup(tmp))
-            a = {'id': res[2],'titolo':tmp,'tipo':res[0],'thumbs':res[3].replace("176x99","640x360"),'desc':res[5]}
-            arrdata.append(a);
-
+        soup = self.getSoup(url)
+        arrdata=[]
+        videos = soup.find_all('div',class_='box')
+        if videos:
+            for video in videos:
+                a = video.find('a', {'data-type': 'video'})
+                img = a.find('img')
+                imgurl = img['data-src']
+                res = re.search("([0-9][0-9][0-9][0-9][0-9]+)",imgurl)
+                if res:
+                    idv = res.group(1)
+                else:
+                    idv = re.search("([0-9][0-9][0-9][0-9][0-9]+)",a['href']).group(1)
+                p = video.find('p', class_='descr')
+                arrdata.append({'id': idv,'url':a['href'],'title':img['alt'].encode("utf-8"),'tipo':video['class'],'thumbs':imgurl.replace("176x99","640x360"),'plot':p.text.strip().encode("utf-8")})
         return arrdata
-
-
-    def get_sport_epList(self):
-
-        arrdata = []
-        url = "http://www.video.mediaset.it/bacino/bacinostrip_5.shtml?page=all"
-        response = urllib2.urlopen(url)
-        html = response.read()
-        response.close()
-      
-        matches = re.findall(r'<figure class="imgBox[\s\S]*?<a data-type.+title="([^"]+)".+href="([^"]+)".+data-src="([^"]+)"[\s\S]*?</h3>[\s\S]*?href=.+([0-9][0-9][0-9][0-9][0-9][0-9])[\s\S]*?<p class="descr">([\s\S]*?)<',html)
-        for res in matches:
-            
-            tmp = str(BeautifulSoup(res[0]))
-            a = {'id': res[3],'titolo':tmp,'tipo':res[1],'thumbs':res[2].replace("176x99","640x360"),'desc':res[4]}
-            arrdata.append(a);
-
-        return arrdata
-
 
     def get_canali_live(self):
+        self.log('Getting the list of live channels', 4)
         
-        url = "http://live1.msf.ticdn.it/Content/HLS/Live/Channel(CH%sHA)/Stream(04)/index.m3u8"
-        tmb = "https://raw.githubusercontent.com/aracnoz/videomediaset_logo/master/%s.png"
+        url = "http://live1.msf.ticdn.it/Content/HLS/Live/Channel(CH{ch}HA)/Stream(04)/index.m3u8"
 
         arrdata = []
 
-        arrdata.append({'titolo':"Canale 5", 'url':url % ('01'),'desc':"",'thumbs':tmb % ("Canale_5")})
-        arrdata.append({'titolo':"Italia 1", 'url':url % ('02'),'desc':"",'thumbs':tmb % ("Italia_1")})
-        arrdata.append({'titolo':"Rete 4", 'url':url % ('03'),'desc':"",'thumbs':tmb % ("Rete_4")})
-        arrdata.append({'titolo':"La 5", 'url':url % ('04'),'desc':"",'thumbs':tmb % ("La_5")})
-        arrdata.append({'titolo':"Italia 2", 'url':url % ('05'),'desc':"",'thumbs':tmb % ("Italia_2")})
-        arrdata.append({'titolo':"Iris", 'url':url % ('06'),'desc':"",'thumbs':tmb % ("Iris")})
-        arrdata.append({'titolo':"Top Crime", 'url':url % ('07'),'desc':"",'thumbs':tmb % ("Top_Crime")})
-        arrdata.append({'titolo':"Premium Extra", 'url':url % ('08'),'desc':"",'thumbs':tmb % ("Premium_Extra")})
-        arrdata.append({'titolo':"Mediaset Extra", 'url':url % ('09'),'desc':"",'thumbs':tmb % ("Mediaset_Extra")})
-
+        arrdata.append({'title':"Canale 5", 'url':url.format(ch='01'),'thumbs': "Canale_5.png"})
+        arrdata.append({'title':"Italia 1", 'url':url.format(ch='02'),'thumbs': "Italia_1.png"})
+        arrdata.append({'title':"Rete 4", 'url':url.format(ch='03'),'thumbs': "Rete_4.png"})
+        arrdata.append({'title':"La 5", 'url':url.format(ch='04'),'thumbs': "La_5.png"})
+        arrdata.append({'title':"Italia 2", 'url':url.format(ch='05'),'thumbs': "Italia_2.png"})
+        arrdata.append({'title':"Iris", 'url':url.format(ch='06'),'thumbs': "Iris.png"})
+        arrdata.append({'title':"Top Crime", 'url':url.format(ch='07'),'thumbs': "Top_Crime.png"})
+        arrdata.append({'title':"Mediaset Extra", 'url':url.format(ch='09'),'thumbs': "Mediaset_Extra.png"})
+        arrdata.append({'title':"TGCOM24", 'url':url.format(ch='10'),'thumbs': "TGCOM24.png"})
         return arrdata
 
     def get_stream(self, id):
+        self.log('Trying to get the stream with id ' + str(id), 4)
 
-        url = "http://cdnselector.xuniplay.fdnames.com/GetCDN.aspx?streamid=%s&format=json" % (id)
+        url = "http://cdnselector.xuniplay.fdnames.com/GetCDN.aspx?streamid={id}&format=json".format(id=id)
 
-        response = urllib2.urlopen(url)
-        html = response.read()
-        response.close()
+        jsn = self.getJson(url)
 
-        html = html.replace('(','')
-        html = html.replace(')','')
-        data = json.loads(html)
+        if jsn and jsn["state"]=="OK":
 
-        stream = {"wmv":"","mp4":""}
-        for vlist in data["videoList"]:
-            print "videomediaset: streams %s" % vlist
-            if ( vlist.find("/wmv2/") > 0): stream["wmv"] = vlist
-            if ( vlist.find("/mp4/") > 0): stream["mp4"] = vlist
-
-        return stream
+            stream = {}
+            for vlist in jsn["videoList"]:
+                self.log( "videomediaset: streams {url}".format(url=vlist))
+                if ( vlist.find("/wmv2/") > 0): stream["wmv"] = vlist
+                if ( vlist.find("/mp4/") > 0): stream["mp4"] = vlist
+                if ( vlist.find("/mp4/") > 0): stream["f4v"] = vlist
+                if ( vlist.find("/mp4/") > 0): stream["smoothstream"] = vlist
+            return stream
+        return False

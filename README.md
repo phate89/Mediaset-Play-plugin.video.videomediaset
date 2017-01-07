@@ -16,7 +16,7 @@ The addon was originally created by Aracnoz. I updated it after site changes and
 
 ### www
 * [Official Topic](http://forum.xbmc.org/showthread.php?tid=292876)
-* [Kodi Official Page](http://addons.kodi.tv/show//)
+* [Kodi Official Page](http://addons.kodi.tv/show/plugin.video.videomediaset/)
 
 ### Latest release
 Manual install: [Download ZIP](https://github.com/phate89/plugin.video.videomediaset/releases)

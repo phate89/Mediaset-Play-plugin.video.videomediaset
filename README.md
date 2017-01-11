@@ -20,7 +20,7 @@ The addon was originally created by Aracnoz. I updated it after site changes and
 
 ### Latest release
 Manual install: [Download ZIP](https://github.com/phate89/plugin.video.videomediaset/releases)
-Require: [script.module.phate89 v1.0.0](https://github.com/phate89/script.module.phate89/releases/download/1.0.0/script.module.phate89.v1.0.0.zip)
+Require: [script.module.phate89 v1.0.1](https://github.com/phate89/script.module.phate89/releases/download/1.0.1/script.module.phate89.v1.0.1.zip)
 
 ### Thanks
 * To Aracnoz for the first addon version!

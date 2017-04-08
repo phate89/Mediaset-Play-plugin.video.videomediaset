@@ -24,7 +24,7 @@ class Mediaset(rutils.RUtils):
         for subpart in subparts:
           name=subpart.find('h2', class_="title")
           if name and name.text.strip():
-            elements.append({'title': name.text.strip(), 'url': url })
+            elements.append({'title': name.text.strip().encode('utf-8'), 'url': url })
         return elements
 
     def get_prog_epList(self,url,title):

@@ -25,6 +25,7 @@ Require: [script.module.phate89 v1.0.1](https://github.com/phate89/script.module
 ### Thanks
 * To Aracnoz for the first addon version!
 * To Mediaset for provinding the content and the api!
+* To Wizy that provided fixes
 
 ### Issues
 If you find some issue please post [in the forum](http://forum.xbmc.org/showthread.php?tid=292876) or [in the github issue page](https://github.com/phate89/plugin.video.videomediaset/issues) with a [debug log](http://kodi.wiki/view/Debug_Log) and all the steps to reproduce the issue

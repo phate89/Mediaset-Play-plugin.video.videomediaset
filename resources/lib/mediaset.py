@@ -34,8 +34,8 @@ class Mediaset(rutils.RUtils):
         page = 1
         arrdata=[]
         maxpage = 200
-       	if not url.startswith("http"):
-       		url="http://www.video.mediaset.it"+url
+        if not url.startswith("http"):
+            url="http://www.video.mediaset.it"+url
         url=url.replace("archivio-news.shtml","archivio-video.shtml")
         soup=self.getSoup(url)
         container=soup.find("div", class_="page brandpage")
@@ -47,7 +47,7 @@ class Mediaset(rutils.RUtils):
             slider=subpart.find("div", class_="slider")
             if slider:
               clips=slider.find_all("div", class_="clip")
-              for clip in clips:				
+              for clip in clips:                
                 data0=clip.find("div", class_="clip__info")
                 data1=data0.find('a')
                 data2=clip.find('img')
@@ -120,7 +120,18 @@ class Mediaset(rutils.RUtils):
     def get_stream(self, id):
         self.log('Trying to get the stream with id ' + str(id), 4)
 
-        url = "http://cdnsel01.mediaset.net/GetCdn.aspx?streamid={id}&format=json".format(id=id)
+        tempurl="http://www.video.mediaset.it/html/metainfo.sjson?id={id}".format(id=id)
+        jsn = self.getJson(tempurl)
+        
+        if not (jsn and 'video' in jsn):
+            return False;
+        
+        if ('guid' in jsn['video']):
+            vid = jsn['video']['guid']
+        else:
+            vid = jsn['video']['id']
+            
+        url = "http://cdnsel01.mediaset.net/GetCdn.aspx?streamid={id}&format=json".format(id=vid)
 
         jsn = self.getJson(url)
 

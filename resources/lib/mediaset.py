@@ -108,6 +108,7 @@ class Mediaset(rutils.RUtils):
         arrdata.append({'title':"Canale 5", 'url':url.format(ch='01'),'thumbs': "Canale_5.png"})
         arrdata.append({'title':"Italia 1", 'url':url.format(ch='02'),'thumbs': "Italia_1.png"})
         arrdata.append({'title':"Rete 4", 'url':url.format(ch='03'),'thumbs': "Rete_4.png"})
+        arrdata.append({'title':"Mediaset 20", 'url':url.format(ch='25'),'thumbs': "Mediaset_20.png"})
         arrdata.append({'title':"La 5", 'url':url.format(ch='04'),'thumbs': "La_5.png"})
         arrdata.append({'title':"Italia 2", 'url':url.format(ch='05'),'thumbs': "Italia_2.png"})
         arrdata.append({'title':"Iris", 'url':url.format(ch='06'),'thumbs': "Iris.png"})

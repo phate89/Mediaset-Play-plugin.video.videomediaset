@@ -1,6 +1,7 @@
 from phate89lib import rutils
 import re
 import math
+import urllib2
 
 class Mediaset(rutils.RUtils):
 
@@ -100,8 +101,9 @@ class Mediaset(rutils.RUtils):
 
     def get_canali_live(self):
         self.log('Getting the list of live channels', 4)
-        
-        url = "https://live1-mediaset-it.akamaized.net/content/hls_clr_xo/live/channel(ch{ch})/index.m3u8"
+
+        for line in urllib2.urlopen("https://raw.githubusercontent.com/phate89/plugin.video.videomediaset/master/live_channel_m3u_url.txt")
+            url = line
 
         arrdata = []
 

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+		<setting label="32001" type="text" id="email" default=""/>
+        <setting label="32002" type="text" id="password" option="hidden" default=""/>
+</settings>

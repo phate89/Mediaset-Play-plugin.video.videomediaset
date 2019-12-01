@@ -1,149 +1,214 @@
 from phate89lib import rutils
+import json
 import re
 import math
+try:
+    from urllib.parse import urlencode, quote
+except ImportError:
+    from urllib import urlencode, quote
+import xml.etree.ElementTree as ET
 
 class Mediaset(rutils.RUtils):
 
     USERAGENT="VideoMediaset Kodi Addon"
     
-    def get_prog_root(self):
-        self.log('Trying to get the program list', 4)
-        url = "http://www.video.mediaset.it/programma/progr_archivio.json"
-        data = self.getJson(url)
-        return data["programmi"]["group"]
+    def __init__(self, email='', password=''):
+        self.email = email
+        self.password = password
+        super(rutils.RUtils, self).__init__()
 
-    def get_url_groupList(self,url):
-        self.log('Trying to get the groups from program url ' + url, 4)
-        if not url.startswith("http"):
-          url="http://www.video.mediaset.it"+url
-        url=url.replace("archivio-news.shtml","archivio-video.shtml")
-        soup=self.getSoup(url)
-        container=soup.find("div", class_="page brandpage")
-        subparts=container.find_all('section')
-        elements = []
-        for subpart in subparts:
-          name=subpart.find('h2', class_="title")
-          if name and name.text.strip():
-            elements.append({'title': name.text.strip().encode('utf-8'), 'url': url })
-        return elements
-
-    def get_prog_epList(self,url,title):
-        self.log('Trying to get the episodes from group url ' + url, 4)
-        totres = 0
-        count = 0
-        page = 1
-        arrdata=[]
-        maxpage = 200
-        if not url.startswith("http"):
-            url="http://www.video.mediaset.it"+url
-        url=url.replace("archivio-news.shtml","archivio-video.shtml")
-        soup=self.getSoup(url)
-        container=soup.find("div", class_="page brandpage")
-        subparts=container.find_all('section')
-        elements = []
-        for subpart in subparts:
-          name=subpart.find('h2')
-          if name and name.text.strip() == title:
-            slider=subpart.find("div", class_="slider")
-            if slider:
-              clips=slider.find_all("div", class_="clip")
-              for clip in clips:                
-                data0=clip.find("div", class_="clip__info")
-                data1=data0.find('a')
-                data2=clip.find('img')
-                data3=data0.find('p')
-                arrdata.append({'id': data1['data-vid'],'title': data1['title'], 'thumbs': data2['data-lazy'].replace("310x175","640x360"), 'plot': data3.text.strip().encode('utf-8'), 'url': data1['href'] })
-        return arrdata
-
-    def get_prog_seasonList(self,url):
-        self.log('Trying to get the seasons from program url ' + url, 4)
-        if not url.startswith("http"):
-            url="http://www.video.mediaset.it"+url
-        url=url.replace("archivio-news.shtml","archivio-video.shtml")
-        soup = self.getSoup(url)
-        arrdata = []
-        container=soup.find("li", class_="season clearfix")
-        if container:
-          container=container.find("ul")
-          ullis=container.find_all("li")
-          if ullis:
-            for ulli in ullis:
-              link=ulli.find("a")
-              arrdata.append({"title": link.text.strip().encode('utf-8'), "url": link['href']})
-        return arrdata
-
-    def get_global_epList(self,mode,range=0):
-        self.log('Trying to get episodes with mode ' + str(mode), 4)
-        if mode == 0: 
-            url = "http://www.video.mediaset.it/bacino/bacinostrip_1.shtml?page=all"
-        elif mode == 1:
-            url = "http://www.video.mediaset.it/piu_visti/piuvisti-{range}.shtml?page=all".format(range=range)
-        elif mode == 2:
-            url = "http://www.video.mediaset.it/bacino/bacinostrip_5.shtml?page=all"
-
-        soup = self.getSoup(url)
-        arrdata=[]
-        videos = soup.find_all('div',class_='box')
-        if videos:
-            for video in videos:
-                a = video.find('a', {'data-type': 'video'})
-                img = a.find('img')
-                imgurl = img['data-src']
-                res = re.search("([0-9][0-9][0-9][0-9][0-9]+)",imgurl)
-                if res:
-                    idv = res.group(1)
-                else:
-                    idv = re.search("([0-9][0-9][0-9][0-9][0-9]+)",a['href']).group(1)
-                p = video.find('p', class_='descr')
-                arrdata.append({'id': idv,'url':a['href'],'title':img['alt'].encode("utf-8"),'tipo':video['class'],'thumbs':imgurl.replace("176x99","640x360"),'plot':p.text.strip().encode("utf-8")})
-        return arrdata
-
-    def get_canali_live(self):
-        self.log('Getting the list of live channels', 4)
+    def __getAPISession(self):
+        res = self.SESSION.get("https://api.one.accedo.tv/session?appKey=59ad346f1de1c4000dfd09c5&uuid=sdd",verify=False)
+        self.setHeader('x-session',res.json()['sessionKey'])
         
-        url = "https://live3-mediaset-it.akamaized.net/content/hls_clr_xo/live/channel(ch{ch})/index.m3u8"
+    def login(self):
+        if self.email!='':
+            if self.userLogin():
+                return True
+            else:
+                self.log('Falling back to anon login', 4)
+        return self.anonymousLogin()
+    
+    def userLogin(self):
+        self.log('Trying to login with user data', 4)
+        data = {"loginID": self.email,
+                "password": self.password,
+                "sessionExpiration": "31536000",
+                "targetEnv": "jssdk",
+                "include": "profile,data,emails,subscriptions,preferences,",
+                "includeUserInfo": "true",
+                "loginMode": "standard",
+                "lang": "it",
+                "APIKey": "3_NhZq9YZgkgeKfN08uFjs3NYGo2Txv4QQTULh0he2w337E-o0DPXzEp4aVnWIR4jg",
+                "cid": "mediaset-web-mediaset.it programmi-mediaset Default",
+                "source": "showScreenSet",
+                "sdk": "js_latest",
+                "authMode": "cookie",
+                "pageURL": "https://www.mediasetplay.mediaset.it",
+                "format": "jsonp",
+                "callback": "gigya.callback",
+                "utf8": "&#x2713;"}
+        res = self.createRequest("https://login.mediaset.it/accounts.login",post=data)
+        s = res.text.strip().replace('gigya.callback(','',1)
+        if s[-1:] ==';':
+            s= s[:-1]
+        if s[-1:] ==')':
+            s= s[:-1]
+        jsn = json.loads(s)
+        if jsn['errorCode'] != 0:
+            self.log('Login with user data failed', 4)
+            return False
+        self.__UID = jsn['UID']
+        self.__UIDSignature = jsn['UIDSignature']
+        self.__signatureTimestamp = jsn['signatureTimestamp']
+        return self.__getAPIKeys(True)
 
-        arrdata = []
+    def anonymousLogin(self):
+        return self.__getAPIKeys()
 
-        arrdata.append({'title':"Canale 5", 'url':url.format(ch='01'),'thumbs': "Canale_5.png"})
-        arrdata.append({'title':"Italia 1", 'url':url.format(ch='02'),'thumbs': "Italia_1.png"})
-        arrdata.append({'title':"Rete 4", 'url':url.format(ch='03'),'thumbs': "Rete_4.png"})
-        arrdata.append({'title':"Mediaset 20", 'url':url.format(ch='25'),'thumbs': "Mediaset_20.png"})
-        arrdata.append({'title':"La 5", 'url':url.format(ch='04'),'thumbs': "La_5.png"})
-        arrdata.append({'title':"Italia 2", 'url':url.format(ch='05'),'thumbs': "Italia_2.png"})
-        arrdata.append({'title':"Iris", 'url':url.format(ch='06'),'thumbs': "Iris.png"})
-        arrdata.append({'title':"Top Crime", 'url':url.format(ch='07'),'thumbs': "Top_Crime.png"})
-        arrdata.append({'title':"Mediaset Extra", 'url':url.format(ch='09'),'thumbs': "Mediaset_Extra.png"})
-        arrdata.append({'title':"TGCOM24", 'url':url.format(ch='10'),'thumbs': "TGCOM24.png"})
-        arrdata.append({'title':"Focus", 'url':url.format(ch='26'),'thumbs': "Focus.png"})
-        return arrdata
-
-    def get_stream(self, id):
-        self.log('Trying to get the stream with id ' + str(id), 4)
-
-        tempurl="http://www.video.mediaset.it/html/metainfo.sjson?id={id}".format(id=id)
-        jsn = self.getJson(tempurl)
-        
-        if not (jsn and 'video' in jsn):
-            return False;
-        
-        if ('guid' in jsn['video']):
-            vid = jsn['video']['guid']
+    def __getAPIKeys(self, login=False):
+        if login:
+            data = {"platform": "pc",
+                    "UID": self.__UID,
+                    "UIDSignature": self.__UIDSignature,
+                    "signatureTimestamp": self.__signatureTimestamp,
+                    "appName": "web/mediasetplay-web/bd16667" }
+            url = "https://api-ott-prod-fe.mediaset.net/PROD/play/idm/account/login/v1.0"
         else:
-            vid = jsn['video']['id']
-            
-        url = "http://cdnsel01.mediaset.net/GetCdn.aspx?streamid={id}&format=json".format(id=vid)
+            data = {"cid": "dc4e7d82-89a5-4a96-acac-d3c7f2ca6d67",
+                    "platform": "pc",
+                    "appName": "web/mediasetplay-web/576ea90" }
+            url = "https://api-ott-prod-fe.mediaset.net/PROD/play/idm/anonymous/login/v1.0"
+        res = self.SESSION.post(url,json=data,verify=False)
+        jsn = res.json()
+        if not jsn['isOk']:
+            return False
+        
+        self.apigw = res.headers['t-apigw']
+        self.cts = res.headers['t-cts']
+        self.setHeader('t-apigw',self.apigw)
+        self.setHeader('t-cts',self.cts)
+        self.__tracecid=jsn['response']['traceCid']
+        self.__cwid=jsn['response']['cwId']
+        self.log('Retrieved keys successfully', 4)
+        return True
+        
+    def __getResponseFromUrl(self,url,format=False):
+        self.login()
+        if format:
+            url = url.format(traceCid=self.__tracecid,cwId=self.__cwid)
+        data = self.getJson(url)
+        if 'response' in data:
+            return data['response']
+        return data
+    
+    def __getEntriesFromUrl(self,url,format=False):
+        return self.__getResponseFromUrl(url)['entries']
+    
+    def __getpagesFromUrl(self,url,page=0):
+        url+= "&page={page}"
+        if (page!=0):
+            return self.__getEntriesFromUrl(url.format(page=page))
+        els=[]
+        while (True):
+            page +=1
+            data = self.__getResponseFromUrl(url.format(page=page))
+            els.extend(data['entries'])
+            if data['hasMore'] == False:
+                return els
+    
+    def __getsectionsFromEntryID(self,id):
+        self.__getAPISession()
+        jsn = self.getJson("https://api.one.accedo.tv/content/entry/{id}?locale=it".format(id=id))
+        id = quote(",".join(jsn["components"]))
+        return self.getJson("https://api.one.accedo.tv/content/entries?id={id}&locale=it".format(id=id))['entries']
+        
+    def __createAZUrl(self,categories=[],inonda=None,pageels=1000):
+        url= "https://api-ott-prod-fe.mediaset.net/PROD/play/rec/azlisting/v1.0?"
+        els = { "query": "*:*",
+                "hitsPerPage": pageels }
+        if categories:
+            els["categories"] = ",".join(categories)
+        if inonda != None:
+            els["inOnda"] = str(inonda).lower()
+        return url + urlencode(els)
+    
+    def OttieniTutto(self,inonda=None,page=0):
+        self.log('Trying to get the full program list', 4)
+        return self.__getpagesFromUrl(self.__createAZUrl(inonda=inonda),page)
+        
+    def OttieniTuttiProgrammi(self,inonda=None,page=0):
+        self.log('Trying to get the tv program list', 4)
+        return self.__getpagesFromUrl(self.__createAZUrl(["Programmi Tv"], inonda),page)
+        
+    def OttieniTutteFiction(self,inonda=None,page=0):
+        self.log('Trying to get the fiction list', 4)
+        return self.__getpagesFromUrl(self.__createAZUrl(["Fiction"], inonda),page)
+        
+    def OttieniGeneriFiction(self):
+        self.log('Trying to get the fiction sections list', 4)
+        return self.__getsectionsFromEntryID("5acfcb3c23eec6000d64a6a4")
+        
+    def OttieniFilm(self,inonda=None,page=0):
+        self.log('Trying to get the movie list', 4)
+        return self.__getpagesFromUrl(self.__createAZUrl(["Cinema"], inonda),page)        
+        
+    def OttieniGeneriFilm(self):
+        self.log('Trying to get the movie sections list', 4)
+        return self.__getsectionsFromEntryID("5acfcbc423eec6000d64a6bb")
+    
+    def OttieniKids(self,inonda=None,page=0):
+        self.log('Trying to get the kids list', 4)
+        return self.__getpagesFromUrl(self.__createAZUrl(["Kids"], inonda),page)        
+        
+    def OttieniGeneriKids(self):
+        self.log('Trying to get the kids sections list', 4)
+        return self.__getsectionsFromEntryID("5acfcb8323eec6000d64a6b3")
+    
+    def OttieniDocumentari(self,inonda=None,page=0):
+        self.log('Trying to get the movie list', 4)
+        return self.__getpagesFromUrl(self.__createAZUrl(["Documentari"], inonda),page)        
+        
+    def OttieniGeneriDocumentari(self):
+        self.log('Trying to get the movie sections list', 4)
+        return self.__getsectionsFromEntryID("5bfd17c423eec6001aec49f9")
+    
+    def OttieniProgrammiGenere(self,id, page=0):
+        self.log('Trying to get the programs from section id ' + id, 4)
+        return self.__getEntriesFromUrl("https://api-ott-prod-fe.mediaset.net/PROD/play/rec/cataloguelisting/v1.0?traceCid={traceCid}&platform=pc&cwId={cwId}&uxReference="+id,format=True)
 
-        jsn = self.getJson(url)
+    def OttieniStagioni(self,seriesId):
+        self.log('Trying to get the seasons from series id ' + seriesId, 4)
+        return self.__getEntriesFromUrl("https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-tv-seasons/feed?bySeriesId={seriesId}&sort=tvSeasonNumber|desc".format(seriesId=seriesId))
 
-        if jsn and jsn["state"]=="OK":
+    def OttieniSezioniProgramma(self,brandId):
+        self.log('Trying to get the sections from brand id ' + brandId, 4)
+        return self.__getEntriesFromUrl(url="https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-brands?byCustomValue={brandId}{" + brandId + "}&sort=mediasetprogram$order")
+        
+    def OttieniVideoSezione(self,subBrandId):
+        self.log('Trying to get the videos from section ' + subBrandId, 4)
+        return self.__getEntriesFromUrl(url="https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-programs?byCustomValue={subBrandId}{" + subBrandId + "}&sort=mediasetprogram$publishInfo_lastPublished|desc")
+        
+    def OttieniCanaliLive(self):
+        self.log('Trying to get the live channels list', 4)
+        return self.__getEntriesFromUrl('https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-stations?sort=ShortTitle')
 
-            stream = {}
-            for vlist in jsn["videoList"]:
-                self.log( "videomediaset: streams {url}".format(url=vlist))
-                if ( vlist.find(".wmv") > 0): stream["wmv"] = vlist
-                if ( vlist.find(".mp4") > 0): stream["mp4"] = vlist
-                if ( vlist.find(".f4v") > 0): stream["f4v"] = vlist
-                if ( vlist.find(".ism") > 0): stream["smoothstream"] = vlist
-            return stream
-        return False
+    def OttieniDatiVideo(self,url):
+        text = self.getText(url)
+        res = { 'url': '', 'pid': '', 'type':'', 'security': False}
+        root = ET.fromstring(text)
+        for vid in root.findall('.//{http://www.w3.org/2005/SMIL21/Language}switch'):
+            ref = vid.find('./{http://www.w3.org/2005/SMIL21/Language}ref')
+            res['url'] = ref.attrib['src']
+            res['type'] = ref.attrib['type']
+            if 'security' in ref.attrib and ref.attrib['security'] =='commonEncryption':
+                res['security'] = True
+            par = ref.find('./{http://www.w3.org/2005/SMIL21/Language}param[@name="trackingData"]')
+            if par is not None:
+                for item in par.attrib['value'].split('|'):
+                    [attr, value] = item.split('=',1)
+                    if attr=='pid':
+                        res['pid'] = value
+                        break
+            break
+        return res

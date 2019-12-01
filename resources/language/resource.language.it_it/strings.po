@@ -1,0 +1,67 @@
+# Kodi Media Center language file
+# Addon Name: Mediaset Play
+# Addon id: plugin.video.videomediaset
+# Addon Provider: phate89
+msgid ""
+msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: phate89\n"
+"Language-Team: Italian (http://www.transifex.com/projects/p/xbmc-addons/language/en/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: it\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: label impostazioni
+
+msgctxt "#32001"
+msgid "E-Mail"
+msgstr "E-Mail"
+
+msgctxt "#32002"
+msgid "Password"
+msgstr "Password"
+
+msgctxt "#32101"
+msgid "Tutto A-Z"
+msgstr "Tutto A-Z"
+
+msgctxt "#32102"
+msgid "Fiction e Serie TV"
+msgstr "Fiction e Serie TV"
+
+msgctxt "#32103"
+msgid "Film"
+msgstr "Film"
+
+msgctxt "#32104"
+msgid "Kids"
+msgstr "Kids"
+
+msgctxt "#32105"
+msgid "Documentari"
+msgstr "Documentari"
+
+msgctxt "#32111"
+msgid "Dirette"
+msgstr "Dirette"
+
+msgctxt "#32112"
+msgid "Canali"
+msgstr "Canali"
+
+msgctxt "#32113"
+msgid "Guida TV"
+msgstr "Guida TV"
+
+msgctxt "#32121"
+msgid "Tutti"
+msgstr "Tutti"
+
+msgctxt "#32122"
+msgid "In Onda"
+msgstr "In Onda"

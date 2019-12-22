@@ -1,105 +1,14 @@
 # -*- coding: utf-8 -*-
 from resources.lib.mediaset import Mediaset
+from resources.mediaset_datahelper import __get_date, __get_timestamp_midnight, __gather_info, __gather_art
 from phate89lib import kodiutils, staticutils
-import inputstreamhelper
+from datetime import datetime, timedelta
 
 useragent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36'
 
-mediaset = Mediaset(kodiutils.getSetting('email'), kodiutils.getSetting('password'))
+mediaset = Mediaset()
+itemsperpage = kodiutils.getSetting('itemsperpage')
 mediaset.log = kodiutils.log
-
-def root():
-    kodiutils.addListItem(kodiutils.LANGUAGE(32101),{'mode':'tutto'})
-    kodiutils.addListItem(kodiutils.LANGUAGE(32102),{'mode':'fiction'})
-    kodiutils.addListItem(kodiutils.LANGUAGE(32103),{'mode':'film'})
-    kodiutils.addListItem(kodiutils.LANGUAGE(32104),{'mode':'kids'})
-    kodiutils.addListItem(kodiutils.LANGUAGE(32105),{'mode':'documentari'})
-    kodiutils.addListItem(kodiutils.LANGUAGE(32111),{'mode':'canali_live'})
-    kodiutils.endScript()
-
-def __gather_info(prog):
-    infos = {}
-    infos['title']=prog["title"]
-    if infos['title'] == '' and 'mediasetprogram$brandTitle' in prog:
-        infos['title']=prog["mediasetprogram$brandTitle"]
-    
-    if 'credits' in prog:
-        infos['cast']=[]
-        infos['director']=[]
-        for person in prog['credits']:
-            if person['creditType']=='actor':
-                infos['cast'].append(person['personName'])
-            elif person['creditType']=='director':
-                infos['director'].append(person['personName'])
-    plot=""
-    plotoutline=""
-    #try to find plotoutline
-    if 'shortDescription' in prog:
-        plotoutline=prog["shortDescription"]
-    elif 'mediasettvseason$shortDescription' in prog:
-        plotoutline=prog["mediasettvseason$shortDescription"]
-    elif 'description' in prog:
-        plotoutline=prog["description"]
-    elif 'mediasetprogram$brandDescription' in prog:
-        plotoutline=prog["mediasetprogram$brandDescription"]
-    elif 'mediasetprogram$subBrandDescription' in prog:
-        plotoutline=prog["mediasetprogram$subBrandDescription"]
-        
-    #try to find plot
-    if 'longDescription' in prog:
-        plot=prog["longDescription"]
-    elif 'description' in prog:
-        plotoutline=prog["description"]
-    elif 'mediasetprogram$brandDescription' in prog:
-        plot=prog["mediasetprogram$brandDescription"]
-    elif 'mediasetprogram$subBrandDescription' in prog:
-        plot=prog["mediasetprogram$subBrandDescription"]
-        
-    #fill the other if one is empty
-    if plot=="":
-        plot=plotoutline
-    if plotoutline=="":
-        plotoutline=plot
-    infos['plot'] = plot
-    infos['plotoutline'] = plotoutline
-    if 'mediasetprogram$duration' in prog:
-        infos['duration'] = prog['mediasetprogram$duration']
-    if 'mediasetprogram$genres' in prog:
-        infos['genre']=prog['mediasetprogram$genres']
-    elif 'mediasettvseason$genres' in prog:
-        infos['genre']=prog['mediasettvseason$genres']
-    if 'year' in prog:
-        infos['year']=prog['year']
-    if 'tvSeasonNumber' in prog:
-        infos['season']=prog['tvSeasonNumber']
-    if 'tvSeasonEpisodeNumber' in prog:
-        infos['episode']=prog['tvSeasonEpisodeNumber']
-    
-    return infos
-    
-def __gather_art(prog):
-    arts = {}
-    if 'thumbnails' in prog:
-        if 'image_vertical-264x396' in prog['thumbnails']:
-            arts['poster'] = prog['thumbnails']['image_vertical-264x396']['url']
-            arts['thumb'] = arts['poster']
-        elif 'channel_logo-100x100' in prog['thumbnails']:
-            arts['poster'] = prog['thumbnails']['channel_logo-100x100']['url']
-            arts['thumb'] = arts['poster']
-            
-        if 'brand_cover-1440x513' in prog['thumbnails']:
-            arts['banner'] = prog['thumbnails']['brand_cover-1440x513']['url']
-        elif 'image_header_poster-1440x630' in prog['thumbnails']:
-            arts['banner'] = prog['thumbnails']['image_header_poster-1440x630']['url']
-        elif 'image_header_poster-1440x433' in prog['thumbnails']:
-            arts['banner'] = prog['thumbnails']['image_header_poster-1440x433']['url']
-        if 'image_header_poster-1440x630' in prog['thumbnails']:
-            arts['landscape'] = prog['thumbnails']['image_header_poster-1440x630']['url']
-        elif 'image_header_poster-1440x433' in prog['thumbnails']:
-            arts['landscape'] = prog['thumbnails']['image_header_poster-1440x433']['url']
-        if 'brand_logo-210x210' in prog['thumbnails']:
-            arts['icon'] = prog['thumbnails']['brand_logo-210x210']['url']
-    return arts
 
 def __imposta_tipo_media(prog):
     if 'tvSeasonNumber' in prog or 'tvSeasonEpisodeNumber' in prog:
@@ -111,10 +20,11 @@ def __imposta_tipo_media(prog):
     else:
         kodiutils.setContent('videos')
     
-def __analizza_elenco(progs):
+def __analizza_elenco(progs, setcontent=False):
     if len(progs) == 0:
         return
-    __imposta_tipo_media(progs[0])
+    if setcontent:
+        __imposta_tipo_media(progs[0])
     for prog in progs:
         infos = __gather_info(prog)
         arts=__gather_art(prog)
@@ -138,20 +48,84 @@ def __analizza_elenco(progs):
         #    kodiutils.addListItem(prog["title"],{'mode':'programma','series_id':prog['seriesId']},videoInfo=infos,arts=arts)
         else:
             kodiutils.addListItem(prog["title"],{'mode':'programma','brand_id':prog['mediasetprogram$brandId']},videoInfo=infos,arts=arts)
-    kodiutils.endScript()
     
-def elenco_programmi_root():
+
+def root():
+    kodiutils.addListItem(kodiutils.LANGUAGE(32101),{'mode':'tutto'})
+    kodiutils.addListItem(kodiutils.LANGUAGE(32106),{'mode':'programmi'})
+    kodiutils.addListItem(kodiutils.LANGUAGE(32102),{'mode':'fiction'})
+    kodiutils.addListItem(kodiutils.LANGUAGE(32103),{'mode':'film'})
+    kodiutils.addListItem(kodiutils.LANGUAGE(32104),{'mode':'kids'})
+    kodiutils.addListItem(kodiutils.LANGUAGE(32105),{'mode':'documentari'})
+    kodiutils.addListItem(kodiutils.LANGUAGE(32111),{'mode':'canali_live'})
+    kodiutils.addListItem(kodiutils.LANGUAGE(32113),{'mode':'guida_tv'})
+    kodiutils.addListItem(kodiutils.LANGUAGE(32107),{'mode':'cerca'})
+    kodiutils.endScript()
+
+def elenco_cerca_root():
+    kodiutils.addListItem(kodiutils.LANGUAGE(32115),{'mode':'cerca','type':'programmi'})
+    kodiutils.addListItem(kodiutils.LANGUAGE(32116),{'mode':'cerca','type':'clip'})
+    kodiutils.addListItem(kodiutils.LANGUAGE(32117),{'mode':'cerca','type':'episodi'})
+    kodiutils.addListItem(kodiutils.LANGUAGE(32103),{'mode':'cerca','type':'film'})
+    kodiutils.endScript()
+
+def elenco_cerca_sezione(sez, page=None):    
+    switcher = { 'programmi': 'CWSEARCHBRAND', 'clip':'CWSEARCHCLIP', 'episodi':'CWSEARCHEPISODE', 'film':'CWSEARCHMOVIE' }
+    sezcode = switcher.get(sez)
+    text = kodiutils.getKeyboardText(kodiutils.LANGUAGE(32131))
+    if text:
+        els, hasmore=mediaset.Cerca(text,sezcode,pageels=itemsperpage,page=page)
+        if els:
+            __analizza_elenco(els, True)
+            if hasmore:
+                kodiutils.addListItem(kodiutils.LANGUAGE(32130),{'mode':'cerca','type': sez, 'page': page + 1 if page else 2})
+        kodiutils.endScript()
+
+def elenco_tutto_root():
     kodiutils.addListItem(kodiutils.LANGUAGE(32121),{'mode':'tutto','all':'true'})
     kodiutils.addListItem(kodiutils.LANGUAGE(32122),{'mode':'tutto','all':'false'})
     kodiutils.endScript()
 
-def elenco_programmi_tutti(inonda):
+def elenco_tutto_lettere(inonda, page=None):
+    letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z','#']
+    kodiutils.addListItem(kodiutils.LANGUAGE(32121),{'mode':'tutto','all':'false' if inonda else 'true','letter':'all' })
+    for letter in letters:
+        kodiutils.addListItem(letter.upper(),{'mode':'tutto','all':'false' if inonda else 'true','letter':letter})
+    kodiutils.endScript()
+
+def elenco_tutto_lettera(inonda, lettera, page=None):
+    kodiutils.setContent('videos')
+    els, hasmore=mediaset.OttieniTuttoLettera(lettera,inonda,pageels=itemsperpage,page=page)
+    if els:
+        __analizza_elenco(els)
+        if hasmore:
+            kodiutils.addListItem(kodiutils.LANGUAGE(32130),{'mode':'tutto','all':'false' if inonda else 'true', 'letter':lettera, 'page': page + 1 if page else 2})
+    kodiutils.endScript()
+
+def elenco_tutto_tutti(inonda, page=None):
+    kodiutils.setContent('videos')
+    els, hasmore=mediaset.OttieniTutto(inonda,pageels=itemsperpage,page=page)
+    if els:
+        __analizza_elenco(els)
+        if hasmore:
+            kodiutils.addListItem(kodiutils.LANGUAGE(32130),{'mode':'tutto','all':'false' if inonda else 'true', 'page': page + 1 if page else 2})
+    kodiutils.endScript()
+
+def elenco_programmi_root():
+    kodiutils.addListItem(kodiutils.LANGUAGE(32121),{'mode':'programmi','all':'true'})
+    kodiutils.addListItem(kodiutils.LANGUAGE(32122),{'mode':'programmi','all':'false'})
+    kodiutils.endScript()
+
+def elenco_programmi_tutti(inonda, page=None):
     kodiutils.setContent('tvshows')
-    els=mediaset.OttieniTutto(inonda)
-    __analizza_elenco(els)
+    els, hasmore=mediaset.OttieniTuttiProgrammi(inonda,pageels=itemsperpage,page=page)
+    if els:
+        __analizza_elenco(els)
+        if hasmore:
+            kodiutils.addListItem(kodiutils.LANGUAGE(32130),{'mode':'programmi','all':'false' if inonda else 'true', 'page': page + 1 if page else 2})
+    kodiutils.endScript()
 
 def elenco_fiction_root():
-    kodiutils.setContent('videos')
     kodiutils.addListItem(kodiutils.LANGUAGE(32121),{'mode':'fiction','all':'true'})
     kodiutils.addListItem(kodiutils.LANGUAGE(32122),{'mode':'fiction','all':'false'})
     for sec in mediaset.OttieniGeneriFiction():
@@ -160,13 +134,16 @@ def elenco_fiction_root():
         kodiutils.addListItem(sec["title"],{'mode':'sezione','id':sec['uxReference']})
     kodiutils.endScript()
     
-def elenco_fiction_tutti(inonda):
+def elenco_fiction_tutti(inonda, page=None):
     kodiutils.setContent('tvshows')
-    els=mediaset.OttieniTutteFiction(inonda)
-    __analizza_elenco(els)
+    els, hasmore=mediaset.OttieniTutteFiction(inonda,pageels=itemsperpage,page=page)
+    if els:
+        __analizza_elenco(els)
+        if hasmore:
+            kodiutils.addListItem(kodiutils.LANGUAGE(32130),{'mode':'fiction','all':'false' if inonda else 'true', 'page': page + 1 if page else 2})
+    kodiutils.endScript()
     
 def elenco_film_root():
-    kodiutils.setContent('videos')
     kodiutils.addListItem(kodiutils.LANGUAGE(32121),{'mode':'film','all':'true'})
     for sec in mediaset.OttieniGeneriFilm():
         if ("uxReference" not in sec):
@@ -174,13 +151,16 @@ def elenco_film_root():
         kodiutils.addListItem(sec["title"],{'mode':'sezione','id':sec['uxReference']})
     kodiutils.endScript()
     
-def elenco_film_tutti(inonda):
+def elenco_film_tutti(inonda, page=None):
     kodiutils.setContent('movies')
-    els=mediaset.OttieniFilm(inonda)
-    __analizza_elenco(els)
+    els, hasmore=mediaset.OttieniFilm(inonda,pageels=itemsperpage,page=page)
+    if els:
+        __analizza_elenco(els)
+        if hasmore:
+            kodiutils.addListItem(kodiutils.LANGUAGE(32130),{'mode':'film','all':'false' if inonda else 'true', 'page': page + 1 if page else 2})
+    kodiutils.endScript()
     
 def elenco_kids_root():
-    kodiutils.setContent('videos')
     kodiutils.addListItem(kodiutils.LANGUAGE(32121),{'mode':'kids','all':'true'})
     for sec in mediaset.OttieniGeneriKids():
         if ("uxReference" not in sec):
@@ -188,13 +168,16 @@ def elenco_kids_root():
         kodiutils.addListItem(sec["title"],{'mode':'sezione','id':sec['uxReference']})
     kodiutils.endScript()
     
-def elenco_kids_tutti(inonda):
-    kodiutils.setContent('movies')
-    els=mediaset.OttieniKids(inonda)
-    __analizza_elenco(els)
+def elenco_kids_tutti(inonda, page=None):
+    kodiutils.setContent('tvshows')
+    els, hasmore=mediaset.OttieniKids(inonda,pageels=itemsperpage,page=page)
+    if els:
+        __analizza_elenco(els)
+        if hasmore:
+            kodiutils.addListItem(kodiutils.LANGUAGE(32130),{'mode':'kids','all':'false' if inonda else 'true', 'page': page + 1 if page else 2})
+    kodiutils.endScript()
     
 def elenco_documentari_root():
-    kodiutils.setContent('videos')
     kodiutils.addListItem("Tutto",{'mode':'documentari','all':'true'})
     for sec in mediaset.OttieniGeneriDocumentari():
         if ("uxReference" not in sec):
@@ -202,18 +185,27 @@ def elenco_documentari_root():
         kodiutils.addListItem(sec["title"],{'mode':'sezione','id':sec['uxReference']})
     kodiutils.endScript()
     
-def elenco_documentari_tutti(inonda):
+def elenco_documentari_tutti(inonda, page=None):
     kodiutils.setContent('movies')
-    els=mediaset.OttieniDocumentari(inonda)
-    __analizza_elenco(els)
+    els, hasmore=mediaset.OttieniDocumentari(inonda,pageels=itemsperpage,page=page)
+    if els:
+        __analizza_elenco(els)
+        if hasmore:
+            kodiutils.addListItem(kodiutils.LANGUAGE(32130),{'mode':'documentari','all':'false' if inonda else 'true', 'page': page + 1 if page else 2})
+    kodiutils.endScript()
     
-def elenco_sezione(id):
-    els=mediaset.OttieniProgrammiGenere(id)
-    __analizza_elenco(els)
+def elenco_sezione(id, page=None):
+    els, hasmore=mediaset.OttieniProgrammiGenere(id,pageels=itemsperpage,page=page)
+    if els:
+        __analizza_elenco(els, True)
+        if hasmore:
+            kodiutils.addListItem(kodiutils.LANGUAGE(32130),{'mode':'sezione','id': id, 'page': page + 1 if page else 2})
+    kodiutils.endScript()
 
 def elenco_stagioni_list(seriesId):
     els=mediaset.OttieniStagioni(seriesId)
     __analizza_elenco(els)
+    kodiutils.endScript()
 
 def elenco_sezioni_list(brandId):
     els=mediaset.OttieniSezioniProgramma(brandId)
@@ -222,103 +214,148 @@ def elenco_sezioni_list(brandId):
         elenco_video_list(els[0]['mediasetprogram$subBrandId'])
     else:
         __analizza_elenco(els)
+    kodiutils.endScript()
 
 def elenco_video_list(subBrandId):
     els=mediaset.OttieniVideoSezione(subBrandId)
     #els.pop(0)
+    __analizza_elenco(els, True)
+    kodiutils.endScript()
+
+def canali_live_root():
+    kodiutils.setContent('videos')
+    els=mediaset.OttieniCanaliLive()
     __analizza_elenco(els)
+    kodiutils.endScript()
 
-# workaround to gather the real url and avoid failings
-def __get_real_url(url, ua=None):
-    headers={}
-    if (ua):
-        headers['user-agent']=ua
-    res = mediaset.createRequest(url, headers=headers, allow_redirects=False)
-    kodiutils.log("Found url " + res.headers['Location'])
-    return res.headers['Location']
+def guida_tv_root():
+    kodiutils.setContent('videos')
+    els=mediaset.OttieniCanaliLive()
+    for prog in els:
+        infos = __gather_info(prog)
+        arts=__gather_art(prog)
+        if 'tuningInstruction' in prog:
+            data = {'mode':'live'}
+            if prog['tuningInstruction'] and not prog['mediasetstation$eventBased']:
+                kodiutils.addListItem(prog["title"],{'mode':'guida_tv', 'id':prog['callSign'], 'week':__get_timestamp_midnight(datetime.now())},videoInfo=infos,arts=arts)
+    kodiutils.endScript()
+
+def __get_date_string(dt):
+    format = kodiutils.getRegion('datelong')
+    format = format.replace("%A",kodiutils.KODILANGUAGE(dt.weekday() + 11))
+    format = format.replace("%B",kodiutils.KODILANGUAGE(dt.month + 20))
+    return dt.strftime(kodiutils.py2_encode(format))
+
+def guida_tv_canale_settimana(id, dt):
+    dt = __get_date(dt)
+    for d in range(0,16):
+        currdate =  dt - timedelta(days=d)
+        kodiutils.addListItem(__get_date_string(currdate),{'mode':'guida_tv', 'id':id, 'day':__get_timestamp_midnight(currdate)})
+    #kodiutils.addListItem(kodiutils.LANGUAGE(32136),{'mode':'guida_tv', 'id':id, 'week':__get_timestamp_midnight(dt - timedelta(days=7))})
+    kodiutils.endScript()
     
-def __get_best_url_possible(url, protocol, id):
-    kodiutils.log("Trying to get the url from " + url)
-    mediaset.login()
-    realurl = __get_real_url(url, useragent)
-    is_helper = inputstreamhelper.Helper(protocol)
-    print(protocol)
-    print(is_helper.check_inputstream())
-    headers = {'user-agent':useragent, 't-apigw': mediaset.apigw, 't-cts': mediaset.cts }
-    if is_helper.check_inputstream() and not realurl.endswith('mp4'):
-        props = {'manifest_type': protocol,
-                 'license_type': 'com.widevine.alpha',
-                 'license_key': 'https://widevine.entitlement.theplatform.eu/wv/web/ModularDrm/getRawWidevineLicense?releasePid=' + id + '&account=http://access.auth.theplatform.com/data/Account/2702976343&schema=1.0&token=' + mediaset.cts + '|Accept=*/*&Content-Type=&User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36|R{SSM}|'
-        }
-        kodiutils.setResolvedUrl(realurl, headers=headers, ins=is_helper.inputstream_addon, insdata=props)
-    else:
-        kodiutils.setResolvedUrl(realurl)
+def guida_tv_canale_giorno(id, dt):
+    res = mediaset.OttieniGuidaTV(id, dt, dt + 86399999) #86399999 is one day minus 1 ms
+    if 'listings' in res:
+        for el in res['listings']:
+            if kodiutils.getSettingAsBool('fullguide') or el['program']['mediasetprogram$hasVod']:
+                infos = __gather_info(el['program'])
+                arts = __gather_art(el['program'])
+                s = __get_date(el['startTime']).strftime("%H:%M") + '-' + __get_date(el['endTime']).strftime("%H:%M") + ' ' + el['mediasetlisting$epgTitle']
+                kodiutils.addListItem(s,{'mode':'video', 'guid':el['program']['guid']},videoInfo=infos,arts=arts, isFolder=False)
+    kodiutils.endScript()
 
-def __play_video(pid, live=False):
+def riproduci_guid(guid):
+    res = mediaset.OttieniInfoDaGuid(guid)
+    if not res or 'media' not in res:
+        kodiutils.showOkDialog(kodiutils.LANGUAGE(32132), kodiutils.LANGUAGE(32136))
+        kodiutils.setResolvedUrl(solved=False)
+        return
+    riproduci_video(res['media'][0]['pid'])
+    
+def riproduci_video(pid, live=False):
+    from inputstreamhelper import Helper
     url = 'https://link.theplatform.eu/s/PR1GhC/'
     if not live:
         url +='media/'
     url += pid + '?assetTypes=HD,browser,widevine:HD,browser:SD,browser,widevine:SD,browser:SD&auto=true&balance=true&format=smil&formats=MPEG-DASH,MPEG4,M3U&tracking=true'
     kodiutils.log("Trying to get the video from " + url)
     data = mediaset.OttieniDatiVideo(url)
-    if data['type']!='video/mp4':
-        is_helper = inputstreamhelper.Helper('mpd')
-        mediaset.login()
-        headers = {'user-agent':useragent, 't-apigw': mediaset.apigw, 't-cts': mediaset.cts }
-        if is_helper.check_inputstream():
-            props = {'manifest_type': 'mpd',
-                    'license_type': 'com.widevine.alpha',
-                    'license_key': 'https://widevine.entitlement.theplatform.eu/wv/web/ModularDrm/getRawWidevineLicense?releasePid=' + data['pid'] + '&account=http://access.auth.theplatform.com/data/Account/2702976343&schema=1.0&token=' + mediaset.cts + '|Accept=*/*&Content-Type=&User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36|R{SSM}|'
-            }
-            kodiutils.setResolvedUrl(data['url'], headers=headers, ins=is_helper.inputstream_addon, insdata=props)
+    if data['type']=='video/mp4':
+        kodiutils.setResolvedUrl(data['url'])
+        return
+    is_helper = Helper('mpd', 'com.widevine.alpha' if data['security'] else None)
+    if not is_helper.check_inputstream():
+        kodiutils.showOkDialog(kodiutils.LANGUAGE(32132), kodiutils.LANGUAGE(32133))
+        kodiutils.setResolvedUrl(solved=False)
+        return
+    props = {'manifest_type': 'mpd'}
+    if data['security']:
+        user = kodiutils.getSetting('email')
+        password = kodiutils.getSetting('password')
+        if user=='' or password=='':
+            kodiutils.showOkDialog(kodiutils.LANGUAGE(32132), kodiutils.LANGUAGE(32134))
+            kodiutils.setResolvedUrl(solved=False)
             return
-    kodiutils.setResolvedUrl(data['url'])
-
-def playVideo(pid):
-    # Play the item
-    __get_best_url_possible("http://link.theplatform.eu/s/PR1GhC/media/" + pid, "mpd",pid)
-  
-def playLive(id):
-    # Play the item
-    __get_best_url_possible("https://link.theplatform.eu/s/PR1GhC/" + id, "hls", id)#, mtype="hls", headers='user-agent='+useragent)
-
-def canali_live_root():
-    els=mediaset.OttieniCanaliLive()
-    __analizza_elenco(els)
-
+        if not mediaset.login(user,password):
+            kodiutils.showOkDialog(kodiutils.LANGUAGE(32132), kodiutils.LANGUAGE(32135))
+            kodiutils.setResolvedUrl(solved=False)
+            return
+        props['license_type'] = 'com.widevine.alpha'
+        props['license_key'] = 'https://widevine.entitlement.theplatform.eu/wv/web/ModularDrm/getRawWidevineLicense?releasePid=' + data['pid'] + '&account=http://access.auth.theplatform.com/data/Account/2702976343&schema=1.0&token=' + mediaset.cts + '|Accept=*/*&Content-Type=&User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36|R{SSM}|'
+    headers = {'user-agent':useragent, 't-apigw': mediaset.apigw, 't-cts': mediaset.cts }
+    kodiutils.setResolvedUrl(data['url'], headers=headers, ins=is_helper.inputstream_addon, insdata=props)
+    
 # parameter values
 params = staticutils.getParams()
-
-#if not 'mode' in params or params['mode'] != 'video':
-#    elenco_video_list('100003454')
-#    import sys
-#    sys.exit()
 if 'mode' in params:
+    page = None
+    if 'page' in params:
+        try:
+            page = int(params['page'])
+        except:
+            pass
     if params['mode'] == "tutto":
         if 'all' in params:
-            elenco_programmi_tutti(None if params['all'] == 'true' else True)
+            if 'letter' in params:
+                if params['letter']=='all':
+                    elenco_tutto_tutti(None if params['all'] == 'true' else True, page)
+                else:
+                    elenco_tutto_lettera(None if params['all'] == 'true' else True, params['letter'], page)
+            else:
+                elenco_tutto_lettere(None if params['all'] == 'true' else True, page)
         else:
-            elenco_programmi_root()
+            elenco_tutto_root()
     if params['mode'] == "fiction":
         if 'all' in params:
-            elenco_fiction_tutti(None if params['all'] == 'true' else True)
+            elenco_fiction_tutti(None if params['all'] == 'true' else True, page)
         else:
             elenco_fiction_root()
+    if params['mode'] == "programmi":
+        if 'all' in params:
+            elenco_programmi_tutti(None if params['all'] == 'true' else True, page)
+        else:
+            elenco_programmi_root()
     if params['mode'] == "film":
         if 'all' in params:
-            elenco_film_tutti(None if params['all'] == 'true' else True)
+            elenco_film_tutti(None if params['all'] == 'true' else True, page)
         else:
             elenco_film_root()
     if params['mode'] == "kids":
         if 'all' in params:
-            elenco_kids_tutti(None if params['all'] == 'true' else True)
+            elenco_kids_tutti(None if params['all'] == 'true' else True, page)
         else:
             elenco_kids_root()
     if params['mode'] == "documentari":
         if 'all' in params:
-            elenco_documentari_tutti(None if params['all'] == 'true' else True)
+            elenco_documentari_tutti(None if params['all'] == 'true' else True, page)
         else:
             elenco_documentari_root()
+    if params['mode'] == "cerca":
+        if 'type' in params:
+            elenco_cerca_sezione(params['type'], page)
+        else:
+            elenco_cerca_root()
     if params['mode'] == "sezione":
         elenco_sezione(params['id'])
     if params['mode'] == "programma":
@@ -329,13 +366,21 @@ if 'mode' in params:
         elif 'brand_id' in params:
             elenco_sezioni_list(params['brand_id'])
     if params['mode'] == "video":
-        __play_video(params['pid'])
-        #playVideo(params['pid'])
+        if 'pid' in params:
+            riproduci_video(params['pid'])
+        else:
+            riproduci_guid(params['guid'])
     if params['mode'] == "live":
-        __play_video(params['id'], True)
-        #playLive(params['id'])
+        riproduci_video(params['id'], True)
     if params['mode'] == "canali_live":
         canali_live_root()
+    if params['mode'] == "guida_tv":
+        if 'id' in params:
+            if 'week' in params:
+                guida_tv_canale_settimana(params['id'], int(params['week']))
+            elif 'day':
+                guida_tv_canale_giorno(params['id'], int(params['day']))
+        guida_tv_root()
 else:
     root()
 

@@ -12,27 +12,18 @@ class Mediaset(rutils.RUtils):
 
     USERAGENT="VideoMediaset Kodi Addon"
     
-    def __init__(self, email='', password=''):
-        self.email = email
-        self.password = password
+    def __init__(self):
+        self.anonymousLogin()
         super(rutils.RUtils, self).__init__()
 
     def __getAPISession(self):
         res = self.SESSION.get("https://api.one.accedo.tv/session?appKey=59ad346f1de1c4000dfd09c5&uuid=sdd",verify=False)
         self.setHeader('x-session',res.json()['sessionKey'])
         
-    def login(self):
-        if self.email!='':
-            if self.userLogin():
-                return True
-            else:
-                self.log('Falling back to anon login', 4)
-        return self.anonymousLogin()
-    
-    def userLogin(self):
+    def login(self, user,password):
         self.log('Trying to login with user data', 4)
-        data = {"loginID": self.email,
-                "password": self.password,
+        data = {"loginID": user,
+                "password": password,
                 "sessionExpiration": "31536000",
                 "targetEnv": "jssdk",
                 "include": "profile,data,emails,subscriptions,preferences,",
@@ -93,105 +84,178 @@ class Mediaset(rutils.RUtils):
         self.log('Retrieved keys successfully', 4)
         return True
         
-    def __getResponseFromUrl(self,url,format=False):
-        self.login()
-        if format:
-            url = url.format(traceCid=self.__tracecid,cwId=self.__cwid)
+    def __getEntriesFromUrl(self,url,format=False):
         data = self.getJson(url)
-        if 'response' in data:
-            return data['response']
+        if data and 'entries' in data:
+            return data['entries']
         return data
     
-    def __getEntriesFromUrl(self,url,format=False):
-        return self.__getResponseFromUrl(url)['entries']
-    
-    def __getpagesFromUrl(self,url,page=0):
-        url+= "&page={page}"
-        if (page!=0):
-            return self.__getEntriesFromUrl(url.format(page=page))
-        els=[]
-        while (True):
-            page +=1
-            data = self.__getResponseFromUrl(url.format(page=page))
-            els.extend(data['entries'])
-            if data['hasMore'] == False:
-                return els
+    def __getElsFromUrl(self, url):
+        data = self.getJson(url)
+        if data and 'isOk' in data and data['isOk']: 
+            if 'response' in data:
+                if 'hasMore' in data['response']:
+                    return data['response']['entries'], data['response']['hasMore']
+                else:
+                    return data['response']['entries'], False
+            if 'entries' in data:
+                return data['entries'], False
+        return None, False
+
+    # def __getpagesFromUrl(self,url,page=0):
+    #     url+= "&page={page}"
+    #     if (page!=0):
+    #         return self.__getEntriesFromUrl(url.format(page=page))
+    #     els=[]
+    #     while (True):
+    #         page +=1
+    #         data = self.__getResponseFromUrl(url.format(page=page))
+    #         els.extend(data['entries'])
+    #         if data['hasMore'] == False:
+    #             return els
     
     def __getsectionsFromEntryID(self,id):
         self.__getAPISession()
         jsn = self.getJson("https://api.one.accedo.tv/content/entry/{id}?locale=it".format(id=id))
-        id = quote(",".join(jsn["components"]))
-        return self.getJson("https://api.one.accedo.tv/content/entries?id={id}&locale=it".format(id=id))['entries']
-        
-    def __createAZUrl(self,categories=[],inonda=None,pageels=1000):
-        url= "https://api-ott-prod-fe.mediaset.net/PROD/play/rec/azlisting/v1.0?"
-        els = { "query": "*:*",
-                "hitsPerPage": pageels }
-        if categories:
-            els["categories"] = ",".join(categories)
-        if inonda != None:
-            els["inOnda"] = str(inonda).lower()
-        return url + urlencode(els)
+        if jsn and "components" in jsn:
+            id = quote(",".join(jsn["components"]))
+            jsn = self.getJson("https://api.one.accedo.tv/content/entries?id={id}&locale=it".format(id=id))
+            if jsn and 'entries' in jsn:
+                return jsn['entries']
+        return False
     
-    def OttieniTutto(self,inonda=None,page=0):
+    def __createMediasetUrl(self, base, pageels=None, page=None, args={}):
+        if pageels and not 'hitsPerPage' in args:
+            args['hitsPerPage']=pageels
+        if page and not 'page' in args:
+            args['page'] = str(page)
+        if self.__tracecid:
+            args['traceCid']=self.__tracecid
+        if self.__cwid:
+            args['cwId']=self.__cwid
+        return base + urlencode(args)
+
+
+    def __createAZUrl(self,categories=[],query=None,inonda=None,pageels=100, page=None):
+        args = {"query": query if query else "*:*" }
+
+        if categories:
+            args["categories"] = ",".join(categories)
+        if inonda != None:
+            args["inOnda"] = str(inonda).lower()
+        return self.__createMediasetUrl("https://api-ott-prod-fe.mediaset.net/PROD/play/rec/azlisting/v1.0?",
+                                        pageels, page, args)
+    
+    def OttieniTutto(self,inonda=None,pageels=100, page=None):
         self.log('Trying to get the full program list', 4)
-        return self.__getpagesFromUrl(self.__createAZUrl(inonda=inonda),page)
+        url = self.__createAZUrl(inonda=inonda, pageels=pageels, page = page)
+        return self.__getElsFromUrl(url)
         
-    def OttieniTuttiProgrammi(self,inonda=None,page=0):
+    def OttieniTuttoLettera(self,lettera, inonda=None,pageels=100, page=None):
+        self.log('Trying to get the full program list with letter ' + lettera, 4)
+        if lettera=='#':
+            query='-(TitleFullSearch:{A TO *})'
+        else:
+            query='TitleFullSearch:' + lettera + '*'
+        url = self.__createAZUrl(query=query, inonda=inonda, pageels=pageels, page = page)
+        return self.__getElsFromUrl(url)
+
+    def OttieniTuttiProgrammi(self,inonda=None,pageels=100, page=None):
         self.log('Trying to get the tv program list', 4)
-        return self.__getpagesFromUrl(self.__createAZUrl(["Programmi Tv"], inonda),page)
+        url = self.__createAZUrl(["Programmi Tv"], inonda=inonda, pageels=pageels, page = page)
+        return self.__getElsFromUrl(url)
         
-    def OttieniTutteFiction(self,inonda=None,page=0):
+    def OttieniTutteFiction(self,inonda=None,pageels=100, page=None):
         self.log('Trying to get the fiction list', 4)
-        return self.__getpagesFromUrl(self.__createAZUrl(["Fiction"], inonda),page)
+        url = self.__createAZUrl(["Fiction"], inonda=inonda,pageels=pageels,page=page)
+        return self.__getElsFromUrl(url)
         
     def OttieniGeneriFiction(self):
         self.log('Trying to get the fiction sections list', 4)
         return self.__getsectionsFromEntryID("5acfcb3c23eec6000d64a6a4")
         
-    def OttieniFilm(self,inonda=None,page=0):
+    def OttieniFilm(self,inonda=None,pageels=100, page=None):
         self.log('Trying to get the movie list', 4)
-        return self.__getpagesFromUrl(self.__createAZUrl(["Cinema"], inonda),page)        
+        url = self.__createAZUrl(["Cinema"], inonda=inonda,pageels=pageels,page=page)
+        return self.__getElsFromUrl(url)
         
     def OttieniGeneriFilm(self):
         self.log('Trying to get the movie sections list', 4)
         return self.__getsectionsFromEntryID("5acfcbc423eec6000d64a6bb")
     
-    def OttieniKids(self,inonda=None,page=0):
+    def OttieniKids(self,inonda=None,pageels=100,page=None):
         self.log('Trying to get the kids list', 4)
-        return self.__getpagesFromUrl(self.__createAZUrl(["Kids"], inonda),page)        
+        url = self.__createAZUrl(["Kids"], inonda=inonda, pageels=pageels,page=page)
+        return self.__getElsFromUrl(url)
         
     def OttieniGeneriKids(self):
         self.log('Trying to get the kids sections list', 4)
         return self.__getsectionsFromEntryID("5acfcb8323eec6000d64a6b3")
     
-    def OttieniDocumentari(self,inonda=None,page=0):
+    def OttieniDocumentari(self,inonda=None,pageels=100, page=None):
         self.log('Trying to get the movie list', 4)
-        return self.__getpagesFromUrl(self.__createAZUrl(["Documentari"], inonda),page)        
+        url = self.__createAZUrl(["Documentari"], inonda=inonda,pageels=pageels,page=page)
+        return self.__getElsFromUrl(url)
         
     def OttieniGeneriDocumentari(self):
         self.log('Trying to get the movie sections list', 4)
         return self.__getsectionsFromEntryID("5bfd17c423eec6001aec49f9")
     
-    def OttieniProgrammiGenere(self,id, page=0):
+    def OttieniProgrammiGenere(self,id, pageels=100, page=None):
         self.log('Trying to get the programs from section id ' + id, 4)
-        return self.__getEntriesFromUrl("https://api-ott-prod-fe.mediaset.net/PROD/play/rec/cataloguelisting/v1.0?traceCid={traceCid}&platform=pc&cwId={cwId}&uxReference="+id,format=True)
+        url = self.__createMediasetUrl("https://api-ott-prod-fe.mediaset.net/PROD/play/rec/cataloguelisting/v1.0?", pageels=pageels, page=page, args={'platform':'pc','uxReference':id})
+        return self.__getElsFromUrl(url)
 
     def OttieniStagioni(self,seriesId):
         self.log('Trying to get the seasons from series id ' + seriesId, 4)
-        return self.__getEntriesFromUrl("https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-tv-seasons/feed?bySeriesId={seriesId}&sort=tvSeasonNumber|desc".format(seriesId=seriesId))
+        url = 'https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-tv-seasons/feed?bySeriesId' + seriesId
+        return self.__getEntriesFromUrl(url)
 
     def OttieniSezioniProgramma(self,brandId):
         self.log('Trying to get the sections from brand id ' + brandId, 4)
-        return self.__getEntriesFromUrl(url="https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-brands?byCustomValue={brandId}{" + brandId + "}&sort=mediasetprogram$order")
+        url = 'https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-brands?byCustomValue={brandId}{' + brandId + '}' #&sort=mediasetprogram$order
+        return self.__getEntriesFromUrl(url)
         
     def OttieniVideoSezione(self,subBrandId):
         self.log('Trying to get the videos from section ' + subBrandId, 4)
-        return self.__getEntriesFromUrl(url="https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-programs?byCustomValue={subBrandId}{" + subBrandId + "}&sort=mediasetprogram$publishInfo_lastPublished|desc")
+        url = 'https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-programs?byCustomValue={subBrandId}{' + subBrandId + '}' #&sort=mediasetprogram$publishInfo_lastPublished|desc
+        return self.__getEntriesFromUrl(url)
         
     def OttieniCanaliLive(self):
         self.log('Trying to get the live channels list', 4)
-        return self.__getEntriesFromUrl('https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-stations?sort=ShortTitle')
+        url = 'https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-stations?sort=ShortTitle' #sort=ShortTitle
+        return self.__getEntriesFromUrl(url)
+
+    def Cerca(self, query, section=None, pageels=100, page=None):
+        args={'query': query, 'platform':'pc' }
+        if section:
+            args['uxReference']= section
+        url = self.__createMediasetUrl('https://api-ott-prod-fe.mediaset.net/PROD/play/rec/search/v1.0?', 
+                                        pageels=pageels, page=page,args=args)
+        return self.__getElsFromUrl(url)
+
+    def OttieniGuidaTV(self,chid, start, finish):
+        self.log('Trying to get the tv guide from ' + chid + ' channel starting ' + str(start) + 'finishing ' + str(finish), 4)
+        args = {'byCallSign':chid,'byListingTime': str(start) + '~' + str(finish)}
+        url = self.__createMediasetUrl("https://api-ott-prod-fe.mediaset.net/PROD/play/alive/allListingFeedEpg/v1.0?", 
+                                        pageels=None, page=None, args=args)
+        res = self.__getElsFromUrl(url)
+        if res:
+            if len(res)>0 and res[0] and len(res[0])>0:
+                return res[0][0]
+            return {}
+        else:
+            return res
+
+    def OttieniInfoDaGuid(self,guid):
+        self.log('Trying to get info from guid ' + guid, 4)
+        url = 'https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-programs/guid/-/' + guid
+        data = self.getJson(url)
+        if data and not 'isException' in data:
+            return data
+        else:
+            return False
+
 
     def OttieniDatiVideo(self,url):
         text = self.getText(url)

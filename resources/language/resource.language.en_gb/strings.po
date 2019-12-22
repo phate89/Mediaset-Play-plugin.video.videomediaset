@@ -26,6 +26,18 @@ msgctxt "#32002"
 msgid "Password"
 msgstr "Password"
 
+msgctxt "#32003"
+msgid "Elementi per pagina"
+msgstr "Items per page"
+
+msgctxt "#32004"
+msgid "Mostra in guida tv anche elementi non riproducibili"
+msgstr "Show in tv guide unplayable items"
+
+msgctxt "#32005"
+msgid "Installa widevine per i contenuti protetti"
+msgstr "Install widevine CDM for protected content"
+
 msgctxt "#32101"
 msgid "Tutto A-Z"
 msgstr "All A-Z"
@@ -46,6 +58,14 @@ msgctxt "#32105"
 msgid "Documentari"
 msgstr "Documentaries"
 
+msgctxt "#32106"
+msgid "Programmi TV"
+msgstr "TV Programs"
+
+msgctxt "#32107"
+msgid "Cerca"
+msgstr "Search"
+
 msgctxt "#32111"
 msgid "Dirette"
 msgstr "Live TV"
@@ -58,6 +78,18 @@ msgctxt "#32113"
 msgid "Guida TV"
 msgstr "TV Guide"
 
+msgctxt "#32115"
+msgid "Programmi"
+msgstr "TV Programs"
+
+msgctxt "#32116"
+msgid "Clip"
+msgstr "Clips"
+
+msgctxt "#32117"
+msgid "Episodi"
+msgstr "Episodes"
+
 msgctxt "#32121"
 msgid "Tutti"
 msgstr "All"
@@ -65,3 +97,31 @@ msgstr "All"
 msgctxt "#32122"
 msgid "In Onda"
 msgstr "On Air"
+
+msgctxt "#32130"
+msgid "Prossima pagina"
+msgstr "Next Page"
+
+msgctxt "#32131"
+msgid "Inserisci testo da cercare"
+msgstr "Insert text to find"
+
+msgctxt "#32132"
+msgid "Errore"
+msgstr "eRROR"
+
+msgctxt "#32133"
+msgid "Per riprodurre il video serve un addon inputstream compatibile"
+msgstr "To play this video you need a compatible inputstream addon"
+
+msgctxt "#32134"
+msgid "Serve effettuare il login per riprodurre questo video"
+msgstr "You have to log in to play this video"
+
+msgctxt "#32135"
+msgid "Login fallito. Correggere e riprovare"
+msgstr "Log in failed. Try again"
+
+msgctxt "#32136"
+msgid "L'elemento non è riproducibile on demand"
+msgstr "The element is not playable on demand"

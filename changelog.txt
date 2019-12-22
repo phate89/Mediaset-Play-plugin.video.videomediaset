@@ -1,6 +1,9 @@
 [B]v2.0.0[/B]
 - rewrite the addon for the new website (MediasetPlay)
 - added support for login and widevine protected content (requires inputstream and widevine libraries)
+- added search function
+- added page size setting to limit items (default 500)
+- added tv guide support
 
 [B]1.3.2[/B]
 - fixed live channel urls (thx to LEOSCHUMY)

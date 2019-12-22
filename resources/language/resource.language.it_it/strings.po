@@ -26,6 +26,18 @@ msgctxt "#32002"
 msgid "Password"
 msgstr "Password"
 
+msgctxt "#32003"
+msgid "Elementi per pagina"
+msgstr "Elementi per pagina"
+
+msgctxt "#32004"
+msgid "Mostra in guida tv anche elementi non riproducibili"
+msgstr "Mostra in guida tv anche elementi non riproducibili"
+
+msgctxt "#32005"
+msgid "Installa widevine per i contenuti protetti"
+msgstr "Installa widevine per i contenuti protetti"
+
 msgctxt "#32101"
 msgid "Tutto A-Z"
 msgstr "Tutto A-Z"
@@ -46,6 +58,14 @@ msgctxt "#32105"
 msgid "Documentari"
 msgstr "Documentari"
 
+msgctxt "#32106"
+msgid "Programmi TV"
+msgstr "Programmi TV"
+
+msgctxt "#32107"
+msgid "Cerca"
+msgstr "Cerca"
+
 msgctxt "#32111"
 msgid "Dirette"
 msgstr "Dirette"
@@ -58,6 +78,18 @@ msgctxt "#32113"
 msgid "Guida TV"
 msgstr "Guida TV"
 
+msgctxt "#32115"
+msgid "Programmi"
+msgstr "Programmi"
+
+msgctxt "#32116"
+msgid "Clip"
+msgstr "Clip"
+
+msgctxt "#32117"
+msgid "Episodi"
+msgstr "Episodi"
+
 msgctxt "#32121"
 msgid "Tutti"
 msgstr "Tutti"
@@ -65,3 +97,31 @@ msgstr "Tutti"
 msgctxt "#32122"
 msgid "In Onda"
 msgstr "In Onda"
+
+msgctxt "#32130"
+msgid "Prossima pagina"
+msgstr "Prossima pagina"
+
+msgctxt "#32131"
+msgid "Inserisci testo da cercare"
+msgstr "Inserisci testo da cercare"
+
+msgctxt "#32132"
+msgid "Errore"
+msgstr "Errore"
+
+msgctxt "#32133"
+msgid "Per riprodurre il video serve un addon inputstream compatibile"
+msgstr "Per riprodurre il video serve un addon inputstream compatibile"
+
+msgctxt "#32134"
+msgid "Serve effettuare il login per riprodurre questo video"
+msgstr "Serve effettuare il login per riprodurre questo video"
+
+msgctxt "#32135"
+msgid "Login fallito. Correggere e riprovare"
+msgstr "Login fallito. Correggere e riprovare"
+
+msgctxt "#32136"
+msgid "L'elemento non è riproducibile on demand"
+msgstr "L'elemento non è riproducibile on demand"

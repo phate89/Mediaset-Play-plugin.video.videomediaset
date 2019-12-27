@@ -125,3 +125,11 @@ msgstr "Log in failed. Try again"
 msgctxt "#32136"
 msgid "L'elemento non è riproducibile on demand"
 msgstr "The element is not playable on demand"
+
+msgctxt "#32137"
+msgid "Diretta"
+msgstr "Live"
+
+msgctxt "#32138"
+msgid "Ricomincia"
+msgstr "Restart"

@@ -125,3 +125,11 @@ msgstr "Login fallito. Correggere e riprovare"
 msgctxt "#32136"
 msgid "L'elemento non è riproducibile on demand"
 msgstr "L'elemento non è riproducibile on demand"
+
+msgctxt "#32137"
+msgid "Diretta"
+msgstr "Diretta"
+
+msgctxt "#32138"
+msgid "Ricomincia"
+msgstr "Ricomincia"

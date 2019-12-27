@@ -1,4 +1,4 @@
-from phate89lib import rutils
+from phate89lib import rutils, staticutils
 import json
 import re
 import math
@@ -91,16 +91,20 @@ class Mediaset(rutils.RUtils):
         return data
     
     def __getElsFromUrl(self, url):
+        res = None
+        hasMore = False
         data = self.getJson(url)
         if data and 'isOk' in data and data['isOk']: 
             if 'response' in data:
                 if 'hasMore' in data['response']:
-                    return data['response']['entries'], data['response']['hasMore']
+                    hasMore = data['response']['hasMore']
+                if 'entries' in data['response']:
+                    res = data['response']['entries']
                 else:
-                    return data['response']['entries'], False
-            if 'entries' in data:
-                return data['entries'], False
-        return None, False
+                    res = data['response']
+            elif 'entries' in data:
+                res = data['entries']
+        return res, hasMore
 
     # def __getpagesFromUrl(self,url,page=0):
     #     url+= "&page={page}"
@@ -124,14 +128,14 @@ class Mediaset(rutils.RUtils):
                 return jsn['entries']
         return False
     
-    def __createMediasetUrl(self, base, pageels=None, page=None, args={}):
+    def __createMediasetUrl(self, base, pageels=None, page=None, args={}, passkeys=True):
         if pageels and not 'hitsPerPage' in args:
             args['hitsPerPage']=pageels
         if page and not 'page' in args:
             args['page'] = str(page)
-        if self.__tracecid:
+        if passkeys and self.__tracecid:
             args['traceCid']=self.__tracecid
-        if self.__cwid:
+        if passkeys and self.__cwid:
             args['cwId']=self.__cwid
         return base + urlencode(args)
 
@@ -247,6 +251,19 @@ class Mediaset(rutils.RUtils):
         else:
             return res
 
+    def OttieniProgrammiLive(self):
+        self.log('Trying to get the live programs', 4)
+        now = staticutils.get_timestamp()
+        args = {'byListingTime': str(now-1001) + '~' + str(now), 'sort':'title'}
+        url = self.__createMediasetUrl("https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-listings?", 
+                                        pageels=None, page=None, args=args, passkeys=False)
+        return self.__getEntriesFromUrl(url)
+
+    def OttieniLiveStream(self,guid):
+        self.log('Trying to get live and rewind channel program of id ' + guid, 4)
+        url = 'https://static3.mediasetplay.mediaset.it/apigw/nownext/' + guid + '.json'
+        return self.__getElsFromUrl(url)
+        
     def OttieniInfoDaGuid(self,guid):
         self.log('Trying to get info from guid ' + guid, 4)
         url = 'https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-programs/guid/-/' + guid
@@ -256,8 +273,12 @@ class Mediaset(rutils.RUtils):
         else:
             return False
 
-
-    def OttieniDatiVideo(self,url):
+    def OttieniDatiVideo(self,pid, live=False):
+        self.log('Trying to get video data from pid ' + pid, 4)
+        url = 'https://link.theplatform.eu/s/PR1GhC/'
+        if not live:
+            url +='media/'
+        url += pid + '?assetTypes=HD,browser,widevine:HD,browser:SD,browser,widevine:SD,browser:SD&auto=true&balance=true&format=smil&formats=MPEG-DASH,MPEG4,M3U&tracking=true'
         text = self.getText(url)
         res = { 'url': '', 'pid': '', 'type':'', 'security': False}
         root = ET.fromstring(text)

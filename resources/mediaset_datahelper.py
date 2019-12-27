@@ -1,18 +1,20 @@
-from datetime import datetime
+from phate89lib import kodiutils
 
-def __get_date(dt):
-    return datetime.fromtimestamp(dt / 1e3)
+def __get_date_string(dt):
+    format = kodiutils.getRegion('datelong')
+    format = format.replace("%A",kodiutils.KODILANGUAGE(dt.weekday() + 11))
+    format = format.replace("%B",kodiutils.KODILANGUAGE(dt.month + 20))
+    return dt.strftime(kodiutils.py2_encode(format))
 
-def __get_timestamp_midnight(dt):
-    return int((dt.replace(hour=0, minute=0, second=0, microsecond=0) - datetime(1970,1,1)).total_seconds())*1000
-
-def __gather_info(prog):
-    infos = {}
-    infos['title']=prog["title"]
-    if infos['title'] == '' and 'mediasetprogram$brandTitle' in prog:
+def __gather_info(prog, infos=None):
+    if infos is None:
+        infos={}
+    if not 'title' in infos and 'title' in prog:
+        infos['title']=prog["title"]
+    if (not 'title' in infos  or infos['title'] == '') and 'mediasetprogram$brandTitle' in prog:
         infos['title']=prog["mediasetprogram$brandTitle"]
     
-    if 'credits' in prog:
+    if 'credits' not in infos and 'credits' in prog:
         infos['cast']=[]
         infos['director']=[]
         for person in prog['credits']:
@@ -20,52 +22,56 @@ def __gather_info(prog):
                 infos['cast'].append(person['personName'])
             elif person['creditType']=='director':
                 infos['director'].append(person['personName'])
-    plot=""
-    plotoutline=""
-    #try to find plotoutline
-    if 'shortDescription' in prog:
-        plotoutline=prog["shortDescription"]
-    elif 'mediasettvseason$shortDescription' in prog:
-        plotoutline=prog["mediasettvseason$shortDescription"]
-    elif 'description' in prog:
-        plotoutline=prog["description"]
-    elif 'mediasetprogram$brandDescription' in prog:
-        plotoutline=prog["mediasetprogram$brandDescription"]
-    elif 'mediasetprogram$subBrandDescription' in prog:
-        plotoutline=prog["mediasetprogram$subBrandDescription"]
+
+    if not ('plot' in infos or 'plotoutline' in infos):
+        plot=""
+        plotoutline=""
+        #try to find plotoutline
+        if 'shortDescription' in prog:
+            plotoutline=prog["shortDescription"]
+        elif 'mediasettvseason$shortDescription' in prog:
+            plotoutline=prog["mediasettvseason$shortDescription"]
+        elif 'description' in prog:
+            plotoutline=prog["description"]
+        elif 'mediasetprogram$brandDescription' in prog:
+            plotoutline=prog["mediasetprogram$brandDescription"]
+        elif 'mediasetprogram$subBrandDescription' in prog:
+            plotoutline=prog["mediasetprogram$subBrandDescription"]
+            
+        #try to find plot
+        if 'longDescription' in prog:
+            plot=prog["longDescription"]
+        elif 'description' in prog:
+            plotoutline=prog["description"]
+        elif 'mediasetprogram$brandDescription' in prog:
+            plot=prog["mediasetprogram$brandDescription"]
+        elif 'mediasetprogram$subBrandDescription' in prog:
+            plot=prog["mediasetprogram$subBrandDescription"]
+            
+        #fill the other if one is empty
+        if plot=="":
+            plot=plotoutline
+        if plotoutline=="":
+            plotoutline=plot
+        infos['plot'] = plot
+        infos['plotoutline'] = plotoutline
         
-    #try to find plot
-    if 'longDescription' in prog:
-        plot=prog["longDescription"]
-    elif 'description' in prog:
-        plotoutline=prog["description"]
-    elif 'mediasetprogram$brandDescription' in prog:
-        plot=prog["mediasetprogram$brandDescription"]
-    elif 'mediasetprogram$subBrandDescription' in prog:
-        plot=prog["mediasetprogram$subBrandDescription"]
-        
-    #fill the other if one is empty
-    if plot=="":
-        plot=plotoutline
-    if plotoutline=="":
-        plotoutline=plot
-    infos['plot'] = plot
-    infos['plotoutline'] = plotoutline
-    if 'mediasetprogram$duration' in prog:
+    if not 'duration' in infos and 'mediasetprogram$duration' in prog:
         infos['duration'] = prog['mediasetprogram$duration']
-    if 'mediasetprogram$genres' in prog:
+    if not 'genre' in infos and 'mediasetprogram$genres' in prog:
         infos['genre']=prog['mediasetprogram$genres']
-    elif 'mediasettvseason$genres' in prog:
+    elif not 'genre' in infos and 'mediasettvseason$genres' in prog:
         infos['genre']=prog['mediasettvseason$genres']
-    if 'year' in prog:
+    if not 'year' in infos and 'year' in prog:
         infos['year']=prog['year']
-    if 'tvSeasonNumber' in prog:
+    if not 'season' in infos and 'tvSeasonNumber' in prog:
         infos['season']=prog['tvSeasonNumber']
-    if 'tvSeasonEpisodeNumber' in prog:
+    if not 'episode' in infos and 'tvSeasonEpisodeNumber' in prog:
         infos['episode']=prog['tvSeasonEpisodeNumber']
-    
+    if 'program' in prog:
+        return __gather_info(prog['program'],infos)
     return infos
-    
+
 def __gather_art(prog):
     arts = {}
     if 'thumbnails' in prog:
@@ -88,4 +94,6 @@ def __gather_art(prog):
             arts['landscape'] = prog['thumbnails']['image_header_poster-1440x433']['url']
         if 'brand_logo-210x210' in prog['thumbnails']:
             arts['icon'] = prog['thumbnails']['brand_logo-210x210']['url']
+    elif 'program' in prog:
+        return __gather_art(prog['program'])
     return arts

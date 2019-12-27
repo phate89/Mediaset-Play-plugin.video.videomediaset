@@ -1,9 +1,9 @@
 
-Kodi VideoMediaset addon
+Kodi Mediaset Play addon
 ===================================
 
 ### Info
-A kodi plugin to access videomediaset website and its content.
+A kodi plugin to access Mediaset Play website and its content.
 The addon was originally created by Aracnoz. I updated it after site changes and with new features.
 
 ### Features
@@ -20,7 +20,7 @@ The addon was originally created by Aracnoz. I updated it after site changes and
 
 ### Latest release
 Manual install: [Download ZIP](https://github.com/phate89/plugin.video.videomediaset/releases)
-Require: [script.module.phate89 v1.0.1](https://github.com/phate89/script.module.phate89/releases/download/1.0.1/script.module.phate89.v1.0.1.zip)
+Require: [script.module.phate89 v1.2.0](https://github.com/phate89/script.module.phate89/releases/download/1.2.0/script.module.phate89.v1.2.0.zip)
 
 ### Thanks
 * To Aracnoz for the first addon version!

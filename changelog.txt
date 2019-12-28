@@ -1,3 +1,7 @@
+[B]2.0.1[/B]
+
+- fixed next page search
+
 [B]2.0.0[/B]
 - rewrite the addon for the new website (Mediaset Play)
 - added support for login and widevine protected content (requires inputstream and widevine libraries)

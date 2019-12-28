@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
+from datetime import timedelta
 from resources.lib.mediaset import Mediaset
 from resources.mediaset_datahelper import __gather_info, __gather_art, __get_date_string
 from phate89lib import kodiutils, staticutils
-from datetime import datetime, timedelta
 
 useragent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36'
 
@@ -21,7 +21,7 @@ def __imposta_tipo_media(prog):
         kodiutils.setContent('videos')
     
 def __analizza_elenco(progs, setcontent=False):
-    if len(progs) == 0:
+    if not progs:
         return
     if setcontent:
         __imposta_tipo_media(progs[0])
@@ -71,7 +71,7 @@ def elenco_cerca_root():
 
 def apri_ricerca(sez):    
     text = kodiutils.getKeyboardText(kodiutils.LANGUAGE(32131))
-    elenco_cerca_sezione(sez, 1)
+    elenco_cerca_sezione(sez, text, 1)
 
 def elenco_cerca_sezione(sez, text, page=None):
     switcher = { 'programmi': 'CWSEARCHBRAND', 'clip':'CWSEARCHCLIP', 'episodi':'CWSEARCHEPISODE', 'film':'CWSEARCHMOVIE' }
@@ -89,7 +89,7 @@ def elenco_tutto_root():
     kodiutils.addListItem(kodiutils.LANGUAGE(32122),{'mode':'tutto','all':'false'})
     kodiutils.endScript()
 
-def elenco_tutto_lettere(inonda, page=None):
+def elenco_tutto_lettere(inonda):
     letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z','#']
     kodiutils.addListItem(kodiutils.LANGUAGE(32121),{'mode':'tutto','all':'false' if inonda else 'true','letter':'all' })
     for letter in letters:
@@ -197,12 +197,12 @@ def elenco_documentari_tutti(inonda, page=None):
             kodiutils.addListItem(kodiutils.LANGUAGE(32130),{'mode':'documentari','all':'false' if inonda else 'true', 'page': page + 1 if page else 2})
     kodiutils.endScript()
     
-def elenco_sezione(id, page=None):
-    els, hasmore=mediaset.OttieniProgrammiGenere(id,pageels=itemsperpage,page=page)
+def elenco_sezione(sid, page=None):
+    els, hasmore=mediaset.OttieniProgrammiGenere(sid,pageels=itemsperpage,page=page)
     if els:
         __analizza_elenco(els, True)
         if hasmore:
-            kodiutils.addListItem(kodiutils.LANGUAGE(32130),{'mode':'sezione','id': id, 'page': page + 1 if page else 2})
+            kodiutils.addListItem(kodiutils.LANGUAGE(32130),{'mode':'sezione','id': sid, 'page': page + 1 if page else 2})
     kodiutils.endScript()
 
 def elenco_stagioni_list(seriesId):
@@ -237,21 +237,20 @@ def guida_tv_root():
         infos = __gather_info(prog)
         arts=__gather_art(prog)
         if 'tuningInstruction' in prog:
-            data = {'mode':'live'}
             if prog['tuningInstruction'] and not prog['mediasetstation$eventBased']:
                 kodiutils.addListItem(prog["title"],{'mode':'guida_tv', 'id':prog['callSign'], 'week':staticutils.get_timestamp_midnight()},videoInfo=infos,arts=arts)
     kodiutils.endScript()
 
-def guida_tv_canale_settimana(id, dt):
+def guida_tv_canale_settimana(cid, dt):
     dt = staticutils.get_date_from_timestamp(dt)
     for d in range(0,16):
         currdate =  dt - timedelta(days=d)
-        kodiutils.addListItem(__get_date_string(currdate),{'mode':'guida_tv', 'id':id, 'day':staticutils.get_timestamp_midnight(currdate)})
-    #kodiutils.addListItem(kodiutils.LANGUAGE(32136),{'mode':'guida_tv', 'id':id, 'week':__get_timestamp_midnight(dt - timedelta(days=7))})
+        kodiutils.addListItem(__get_date_string(currdate),{'mode':'guida_tv', 'id':cid, 'day':staticutils.get_timestamp_midnight(currdate)})
+    #kodiutils.addListItem(kodiutils.LANGUAGE(32136),{'mode':'guida_tv', 'id':cid, 'week':__get_timestamp_midnight(dt - timedelta(days=7))})
     kodiutils.endScript()
     
-def guida_tv_canale_giorno(id, dt):
-    res = mediaset.OttieniGuidaTV(id, dt, dt + 86399999) #86399999 is one day minus 1 ms
+def guida_tv_canale_giorno(cid, dt):
+    res = mediaset.OttieniGuidaTV(cid, dt, dt + 86399999) #86399999 is one day minus 1 ms
     if 'listings' in res:
         for el in res['listings']:
             if kodiutils.getSettingAsBool('fullguide') or ('mediasetprogram$hasVod' in el['program'] and el['program']['mediasetprogram$hasVod']):
@@ -263,17 +262,18 @@ def guida_tv_canale_giorno(id, dt):
 
 def canali_live_root_new():
     kodiutils.setContent('videos')
-    now = kodiutils.get_timestamp()
+    now = staticutils.get_timestamp()
     els=mediaset.OttieniProgrammiLive()
     chans = {}
     for chan in els:
         if 'listings' in chan and chan['listings']:
             for prog in chan['listings']:
-                if now >= prog['startTime'] and now <= prog['endTime']:
-                    chans[chan['guid']]= {'title':chan['title'] + ': ' + prog["mediasetlisting$epgTitle"],
-                                          'infos':__gather_info(prog),
-                                          'arts':__gather_art(prog),
-                                          'restartAllowed': prog['mediasetlisting$restartAllowed'] }
+                if prog['startTime'] <= now <= prog['endTime']:
+                    guid = chan['guid']
+                    chans[guid]= {'title':chan['title'] + ': ' + prog["mediasetlisting$epgTitle"],
+                                  'infos':__gather_info(prog),
+                                  'arts':__gather_art(prog),
+                                  'restartAllowed': prog['mediasetlisting$restartAllowed'] }
     els=mediaset.OttieniCanaliLive()
     for prog in els:
         if prog['callSign'] in chans and 'tuningInstruction' in prog and prog['tuningInstruction'] and not prog['mediasetstation$eventBased']:
@@ -294,20 +294,20 @@ def canali_live_root_new():
     kodiutils.endScript()
 
 def canali_live_play(guid):
-    res, hasMore = mediaset.OttieniLiveStream(guid)
-    if 'tuningInstruction' in res:
+    res = mediaset.OttieniLiveStream(guid)
+    if 'tuningInstruction' in res[0]:
         data = {'mode':'live'}
-        vdata=res['tuningInstruction']['urn:theplatform:tv:location:any']
+        vdata=res[0]['tuningInstruction']['urn:theplatform:tv:location:any']
         for v in vdata:
             if v['format']=='application/x-mpegURL':
                 data['id'] = v['releasePids'][0]
             else:
                 data['mid'] = v['releasePids'][0]
         kodiutils.addListItem(kodiutils.LANGUAGE(32137),data,isFolder=False)
-    if 'currentListing' in res and res['currentListing']['mediasetlisting$restartAllowed']:
-        url = res['currentListing']['restartUrl']
-        id = url.rpartition('/')[-1]
-        kodiutils.addListItem(kodiutils.LANGUAGE(32138),{'mode':'video','pid':id},isFolder=False)
+    if 'currentListing' in res[0] and res[0]['currentListing']['mediasetlisting$restartAllowed']:
+        url = res[0]['currentListing']['restartUrl']
+        vid = url.rpartition('/')[-1]
+        kodiutils.addListItem(kodiutils.LANGUAGE(32138),{'mode':'video','pid':vid},isFolder=False)
     kodiutils.endScript()
 
 
@@ -356,7 +356,7 @@ def main():
         if 'page' in params:
             try:
                 page = int(params['page'])
-            except:
+            except ValueError:
                 pass
         if params['mode'] == "tutto":
             if 'all' in params:
@@ -366,7 +366,7 @@ def main():
                     else:
                         elenco_tutto_lettera(None if params['all'] == 'true' else True, params['letter'], page)
                 else:
-                    elenco_tutto_lettere(None if params['all'] == 'true' else True, page)
+                    elenco_tutto_lettere(None if params['all'] == 'true' else True)
             else:
                 elenco_tutto_root()
         if params['mode'] == "fiction":
@@ -427,9 +427,8 @@ def main():
             if 'id' in params:
                 if 'week' in params:
                     guida_tv_canale_settimana(params['id'], int(params['week']))
-                elif 'day':
+                elif 'day' in params:
                     guida_tv_canale_giorno(params['id'], int(params['day']))
             guida_tv_root()
     else:
         root()
-

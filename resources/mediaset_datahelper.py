@@ -1,17 +1,17 @@
 from phate89lib import kodiutils
 
 def __get_date_string(dt):
-    format = kodiutils.getRegion('datelong')
-    format = format.replace("%A",kodiutils.KODILANGUAGE(dt.weekday() + 11))
-    format = format.replace("%B",kodiutils.KODILANGUAGE(dt.month + 20))
-    return dt.strftime(kodiutils.py2_encode(format))
+    fmt = kodiutils.getRegion('datelong')
+    fmt = fmt.replace("%A",kodiutils.KODILANGUAGE(dt.weekday() + 11))
+    fmt = fmt.replace("%B",kodiutils.KODILANGUAGE(dt.month + 20))
+    return dt.strftime(kodiutils.py2_encode(fmt))
 
 def __gather_info(prog, infos=None):
     if infos is None:
         infos={}
-    if not 'title' in infos and 'title' in prog:
+    if 'title' not in infos and 'title' in prog:
         infos['title']=prog["title"]
-    if (not 'title' in infos  or infos['title'] == '') and 'mediasetprogram$brandTitle' in prog:
+    if ('title' not in infos  or infos['title'] == '') and 'mediasetprogram$brandTitle' in prog:
         infos['title']=prog["mediasetprogram$brandTitle"]
     
     if 'credits' not in infos and 'credits' in prog:
@@ -56,18 +56,19 @@ def __gather_info(prog, infos=None):
         infos['plot'] = plot
         infos['plotoutline'] = plotoutline
         
-    if not 'duration' in infos and 'mediasetprogram$duration' in prog:
+    if 'duration' not in infos and 'mediasetprogram$duration' in prog:
         infos['duration'] = prog['mediasetprogram$duration']
-    if not 'genre' in infos and 'mediasetprogram$genres' in prog:
+    if 'genre' not in infos and 'mediasetprogram$genres' in prog:
         infos['genre']=prog['mediasetprogram$genres']
-    elif not 'genre' in infos and 'mediasettvseason$genres' in prog:
+    elif 'genre' not in infos and 'mediasettvseason$genres' in prog:
         infos['genre']=prog['mediasettvseason$genres']
-    if not 'year' in infos and 'year' in prog:
+    if 'year' not in infos and 'year' in prog:
         infos['year']=prog['year']
-    if not 'season' in infos and 'tvSeasonNumber' in prog:
+    if 'season' not in infos and 'tvSeasonNumber' in prog:
         infos['season']=prog['tvSeasonNumber']
-    if not 'episode' in infos and 'tvSeasonEpisodeNumber' in prog:
+    if 'episode' not in infos and 'tvSeasonEpisodeNumber' in prog:
         infos['episode']=prog['tvSeasonEpisodeNumber']
+        
     if 'program' in prog:
         return __gather_info(prog['program'],infos)
     return infos

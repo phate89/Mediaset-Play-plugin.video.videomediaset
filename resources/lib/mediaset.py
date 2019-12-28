@@ -1,18 +1,23 @@
-from phate89lib import rutils, staticutils
 import json
-import re
-import math
+import xml.etree.ElementTree as ET
+from phate89lib import rutils, staticutils
 try:
     from urllib.parse import urlencode, quote
 except ImportError:
     from urllib import urlencode, quote
-import xml.etree.ElementTree as ET
 
 class Mediaset(rutils.RUtils):
 
     USERAGENT="VideoMediaset Kodi Addon"
     
     def __init__(self):
+        self.__UID = ''
+        self.__UIDSignature = ''
+        self.__signatureTimestamp = ''
+        self.apigw = ''
+        self.cts = ''
+        self.__tracecid = ''
+        self.__cwid = ''
         self.anonymousLogin()
         super(rutils.RUtils, self).__init__()
 
@@ -84,7 +89,7 @@ class Mediaset(rutils.RUtils):
         self.log('Retrieved keys successfully', 4)
         return True
         
-    def __getEntriesFromUrl(self,url,format=False):
+    def __getEntriesFromUrl(self,url):
         data = self.getJson(url)
         if data and 'entries' in data:
             return data['entries']
@@ -106,46 +111,38 @@ class Mediaset(rutils.RUtils):
                 res = data['entries']
         return res, hasMore
 
-    # def __getpagesFromUrl(self,url,page=0):
-    #     url+= "&page={page}"
-    #     if (page!=0):
-    #         return self.__getEntriesFromUrl(url.format(page=page))
-    #     els=[]
-    #     while (True):
-    #         page +=1
-    #         data = self.__getResponseFromUrl(url.format(page=page))
-    #         els.extend(data['entries'])
-    #         if data['hasMore'] == False:
-    #             return els
-    
-    def __getsectionsFromEntryID(self,id):
+    def __getsectionsFromEntryID(self,eid):
         self.__getAPISession()
-        jsn = self.getJson("https://api.one.accedo.tv/content/entry/{id}?locale=it".format(id=id))
+        jsn = self.getJson("https://api.one.accedo.tv/content/entry/{eid}?locale=it".format(eid=eid))
         if jsn and "components" in jsn:
-            id = quote(",".join(jsn["components"]))
-            jsn = self.getJson("https://api.one.accedo.tv/content/entries?id={id}&locale=it".format(id=id))
+            eid = quote(",".join(jsn["components"]))
+            jsn = self.getJson("https://api.one.accedo.tv/content/entries?id={eid}&locale=it".format(eid=eid))
             if jsn and 'entries' in jsn:
                 return jsn['entries']
         return False
     
-    def __createMediasetUrl(self, base, pageels=None, page=None, args={}, passkeys=True):
-        if pageels and not 'hitsPerPage' in args:
+    def __createMediasetUrl(self, base, pageels=None, page=None, args=None, passkeys=True):
+        if args is None:
+            args = {}
+        if pageels and 'hitsPerPage' not in args:
             args['hitsPerPage']=pageels
-        if page and not 'page' in args:
+        if page and 'page' not in args:
             args['page'] = str(page)
         if passkeys and self.__tracecid:
             args['traceCid']=self.__tracecid
         if passkeys and self.__cwid:
             args['cwId']=self.__cwid
-        return base + urlencode(args)
+        if base.endswith('?'):
+            return base + urlencode(args)
+        return base + '?' + urlencode(args)
 
 
-    def __createAZUrl(self,categories=[],query=None,inonda=None,pageels=100, page=None):
+    def __createAZUrl(self,categories=None,query=None,inonda=None,pageels=100, page=None):
         args = {"query": query if query else "*:*" }
 
-        if categories:
+        if categories is not None:
             args["categories"] = ",".join(categories)
-        if inonda != None:
+        if inonda is not None:
             args["inOnda"] = str(inonda).lower()
         return self.__createMediasetUrl("https://api-ott-prod-fe.mediaset.net/PROD/play/rec/azlisting/v1.0?",
                                         pageels, page, args)
@@ -205,9 +202,9 @@ class Mediaset(rutils.RUtils):
         self.log('Trying to get the movie sections list', 4)
         return self.__getsectionsFromEntryID("5bfd17c423eec6001aec49f9")
     
-    def OttieniProgrammiGenere(self,id, pageels=100, page=None):
-        self.log('Trying to get the programs from section id ' + id, 4)
-        url = self.__createMediasetUrl("https://api-ott-prod-fe.mediaset.net/PROD/play/rec/cataloguelisting/v1.0?", pageels=pageels, page=page, args={'platform':'pc','uxReference':id})
+    def OttieniProgrammiGenere(self,gid, pageels=100, page=None):
+        self.log('Trying to get the programs from section id ' + gid, 4)
+        url = self.__createMediasetUrl("https://api-ott-prod-fe.mediaset.net/PROD/play/rec/cataloguelisting/v1.0?", pageels=pageels, page=page, args={'platform':'pc','uxReference':gid})
         return self.__getElsFromUrl(url)
 
     def OttieniStagioni(self,seriesId):
@@ -235,28 +232,27 @@ class Mediaset(rutils.RUtils):
         if section:
             args['uxReference']= section
         url = self.__createMediasetUrl('https://api-ott-prod-fe.mediaset.net/PROD/play/rec/search/v1.0?', 
-                                        pageels=pageels, page=page,args=args)
+                                       pageels=pageels, page=page,args=args)
         return self.__getElsFromUrl(url)
 
     def OttieniGuidaTV(self,chid, start, finish):
         self.log('Trying to get the tv guide from ' + chid + ' channel starting ' + str(start) + 'finishing ' + str(finish), 4)
         args = {'byCallSign':chid,'byListingTime': str(start) + '~' + str(finish)}
         url = self.__createMediasetUrl("https://api-ott-prod-fe.mediaset.net/PROD/play/alive/allListingFeedEpg/v1.0?", 
-                                        pageels=None, page=None, args=args)
+                                       pageels=None, page=None, args=args)
         res = self.__getElsFromUrl(url)
-        if res:
-            if len(res)>0 and res[0] and len(res[0])>0:
+        if res is not None:
+            if res and res[0]:
                 return res[0][0]
             return {}
-        else:
-            return res
+        return res
 
     def OttieniProgrammiLive(self):
         self.log('Trying to get the live programs', 4)
         now = staticutils.get_timestamp()
         args = {'byListingTime': str(now-1001) + '~' + str(now), 'sort':'title'}
         url = self.__createMediasetUrl("https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-listings?", 
-                                        pageels=None, page=None, args=args, passkeys=False)
+                                       pageels=None, page=None, args=args, passkeys=False)
         return self.__getEntriesFromUrl(url)
 
     def OttieniLiveStream(self,guid):
@@ -270,8 +266,7 @@ class Mediaset(rutils.RUtils):
         data = self.getJson(url)
         if data and not 'isException' in data:
             return data
-        else:
-            return False
+        return False
 
     def OttieniDatiVideo(self,pid, live=False):
         self.log('Trying to get video data from pid ' + pid, 4)

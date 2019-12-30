@@ -11,15 +11,27 @@ mediaset.log = kodiutils.log
 itemsperpage = kodiutils.getSetting('itemsperpage')
 
 def __imposta_tipo_media(prog):
+    kodiutils.setContent(__ottieni_tipo_media(prog))
+
+def __ottieni_tipo_media(prog):
+    if 'programType' in prog:
+        if prog['programType'] == 'movie':
+            return 'movies'
+        if prog['programType'] == 'episode':
+            return 'episodes'
+    if ('mediasetprogram$brandVerticalSiteCMS' in prog and
+            prog['mediasetprogram$brandVerticalSiteCMS'] == 'fiction'):
+        return 'tvshows'
     if 'tvSeasonNumber' in prog or 'tvSeasonEpisodeNumber' in prog:
-        kodiutils.setContent('episodes')
-    elif 'seriesId' in prog and 'mediasetprogram$subBrandId' not in prog:
-        kodiutils.setContent('tvshows')
-    elif 'mediasetprogram$subBrandDescription' in prog and (prog['mediasetprogram$subBrandDescription'].lower() == 'film' or prog['mediasetprogram$subBrandDescription'].lower() == 'documentario'):
-        kodiutils.setContent('movies')
-    else:
-        kodiutils.setContent('videos')
-    
+        return 'episodes'
+    if 'seriesId' in prog and 'mediasetprogram$subBrandId' not in prog:
+        return 'tvshows'
+    if ('mediasetprogram$subBrandDescription' in prog and
+            (prog['mediasetprogram$subBrandDescription'].lower() == 'film' or
+             prog['mediasetprogram$subBrandDescription'].lower() == 'documentario')):
+        return 'movies'
+    return 'videos'
+
 def __analizza_elenco(progs, setcontent=False):
     if not progs:
         return

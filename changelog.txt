@@ -1,5 +1,6 @@
 [B]2.0.1[/B]
 
+- improved media type and info detection
 - fixed next page search
 
 [B]2.0.0[/B]

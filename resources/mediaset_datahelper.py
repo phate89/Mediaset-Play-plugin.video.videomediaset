@@ -14,9 +14,11 @@ def __gather_info(prog, infos=None):
     if ('title' not in infos  or infos['title'] == '') and 'mediasetprogram$brandTitle' in prog:
         infos['title']=prog["mediasetprogram$brandTitle"]
     
-    if 'credits' not in infos and 'credits' in prog:
-        infos['cast']=[]
-        infos['director']=[]
+    if 'credits' in prog:
+        if 'cast' not in infos:
+            infos['cast'] = []
+        if 'director' not in infos:
+            infos['director'] = []
         for person in prog['credits']:
             if person['creditType']=='actor':
                 infos['cast'].append(person['personName'])
@@ -56,12 +58,19 @@ def __gather_info(prog, infos=None):
         infos['plot'] = plot
         infos['plotoutline'] = plotoutline
         
+    if 'genre' not in infos:
+        infos['genre'] = []
+    if 'mediasetprogram$genres' in prog:
+        infos['genre'].extend(prog['mediasetprogram$genres'])
+    if 'mediasettvseason$genres' in prog:
+        infos['genre'].extend(prog['mediasettvseason$genres'])
+    if 'tags' in prog and prog['tags']:
+        for t in prog['tags']:
+            if t['scheme'] == 'genre':
+                infos['genre'].append(t['title'])
+
     if 'duration' not in infos and 'mediasetprogram$duration' in prog:
         infos['duration'] = prog['mediasetprogram$duration']
-    if 'genre' not in infos and 'mediasetprogram$genres' in prog:
-        infos['genre']=prog['mediasetprogram$genres']
-    elif 'genre' not in infos and 'mediasettvseason$genres' in prog:
-        infos['genre']=prog['mediasettvseason$genres']
     if 'year' not in infos and 'year' in prog:
         infos['year']=prog['year']
     if 'season' not in infos and 'tvSeasonNumber' in prog:

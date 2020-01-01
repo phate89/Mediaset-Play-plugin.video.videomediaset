@@ -41,7 +41,11 @@ def __analizza_elenco(progs, setcontent=False):
         infos = __gather_info(prog)
         arts=__gather_art(prog)
         if 'media' in prog:
-            kodiutils.addListItem(prog["title"],{'mode':'video','pid':prog['media'][0]['pid']},videoInfo=infos,arts=arts,isFolder=False)
+            # salta se non ha un media ma ha il tag perchè non riproducibile
+            if prog['media']:
+                kodiutils.addListItem(prog["title"],
+                                      {'mode': 'video', 'pid': prog['media'][0]['pid']},
+                                      videoInfo=infos, arts=arts, isFolder=False)
         elif 'tuningInstruction' in prog:
             data = {'mode':'live'}
             if prog['tuningInstruction'] and not prog['mediasetstation$eventBased']:

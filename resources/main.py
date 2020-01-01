@@ -62,6 +62,11 @@ def __analizza_elenco(progs, setcontent=False):
             kodiutils.addListItem(prog["title"],{'mode':'programma','brand_id':prog['mediasettvseason$brandId']},videoInfo=infos,arts=arts)
         #elif 'seriesId' in prog:
         #    kodiutils.addListItem(prog["title"],{'mode':'programma','series_id':prog['seriesId']},videoInfo=infos,arts=arts)
+        elif 'seriesId' in prog:
+            kodiutils.addListItem(prog["title"],
+                                  {'mode': 'programma', 'series_id': prog['seriesId'],
+                                   'title': prog['title']},
+                                  videoInfo=infos, arts=arts)
         else:
             kodiutils.addListItem(prog["title"],{'mode':'programma','brand_id':prog['mediasetprogram$brandId']},videoInfo=infos,arts=arts)
     
@@ -221,17 +226,31 @@ def elenco_sezione(sid, page=None):
             kodiutils.addListItem(kodiutils.LANGUAGE(32130),{'mode':'sezione','id': sid, 'page': page + 1 if page else 2})
     kodiutils.endScript()
 
-def elenco_stagioni_list(seriesId):
-    els=mediaset.OttieniStagioni(seriesId)
-    __analizza_elenco(els)
-    kodiutils.endScript()
+
+def elenco_stagioni_list(seriesId, title):
+    els = mediaset.OttieniStagioni(seriesId)
+    if len(els) == 1:
+        elenco_sezioni_list(els[0]['mediasettvseason$brandId'])
+    else:
+        # workaround per controllare se è già una stagione e non una serie
+        brandId = -1
+        for el in els:
+            if el['title'] == title:
+                brandId = el['mediasettvseason$brandId']
+                break
+        if brandId == -1:
+            __analizza_elenco(els)
+            kodiutils.endScript()
+        else:
+            elenco_sezioni_list(brandId)
+
 
 def elenco_sezioni_list(brandId):
-    els=mediaset.OttieniSezioniProgramma(brandId)
-    els.pop(0)
-    if len(els) == 1:
+    els = mediaset.OttieniSezioniProgramma(brandId)
+    if len(els) == 2:
         elenco_video_list(els[0]['mediasetprogram$subBrandId'])
     else:
+        els.pop(0)
         __analizza_elenco(els)
     kodiutils.endScript()
 
@@ -422,7 +441,7 @@ def main():
             elenco_sezione(params['id'])
         if params['mode'] == "programma":
             if 'series_id' in params:
-                elenco_stagioni_list(params['series_id'])
+                elenco_stagioni_list(params['series_id'], params['title'])
             elif 'sub_brand_id' in params:
                 elenco_video_list(params['sub_brand_id'])
             elif 'brand_id' in params:

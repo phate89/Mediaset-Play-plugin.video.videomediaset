@@ -209,7 +209,8 @@ class Mediaset(rutils.RUtils):
 
     def OttieniStagioni(self,seriesId):
         self.log('Trying to get the seasons from series id ' + seriesId, 4)
-        url = 'https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-tv-seasons/feed?bySeriesId' + seriesId
+        url = ('https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-tv-seasons/'
+               'feed?bySeriesId={seriesId}&sort=startYear|desc').format(seriesId=seriesId)
         return self.__getEntriesFromUrl(url)
 
     def OttieniSezioniProgramma(self,brandId):

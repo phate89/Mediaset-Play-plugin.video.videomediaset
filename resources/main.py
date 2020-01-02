@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta
 from resources.lib.mediaset import Mediaset
-from resources.mediaset_datahelper import _gather_info, _gather_art, _get_date_string
+from resources.mediaset_datahelper import _gather_info, _gather_art
 from phate89lib import kodiutils, staticutils  # pylint: disable=import-error
 
 
@@ -321,7 +321,7 @@ class KodiMediaset(object):
         dt = staticutils.get_date_from_timestamp(dt)
         for d in range(0, 16):
             currdate = dt - timedelta(days=d)
-            kodiutils.addListItem(_get_date_string(currdate),
+            kodiutils.addListItem(kodiutils.getFormattedDate(currdate),
                                   {'mode': 'guida_tv', 'id': cid,
                                    'day': staticutils.get_timestamp_midnight(currdate)})
         # kodiutils.addListItem(kodiutils.LANGUAGE(32136),

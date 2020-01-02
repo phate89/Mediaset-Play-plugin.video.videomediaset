@@ -1,13 +1,3 @@
-from phate89lib import kodiutils  # pylint: disable=import-error
-
-
-def _get_date_string(dt):
-    fmt = kodiutils.getRegion('datelong')
-    fmt = fmt.replace("%A", kodiutils.KODILANGUAGE(dt.weekday() + 11))
-    fmt = fmt.replace("%B", kodiutils.KODILANGUAGE(dt.month + 20))
-    return dt.strftime(kodiutils.py2_encode(fmt))
-
-
 def _gather_info(prog, infos=None):
     if infos is None:
         infos = {}

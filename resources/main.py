@@ -457,10 +457,7 @@ def riproduci_video(pid, live=False):
             kodiutils.setResolvedUrl(solved=False)
             return
         props['license_type'] = 'com.widevine.alpha'
-        url = (
-            'https://widevine.entitlement.theplatform.eu/wv/web/ModularDrm/getRawWidevineLicense?'
-            'releasePid={pid}&account=http://access.auth.theplatform.com/data/Account/'
-            '2702976343&schema=1.0&token={cts}').format(pid=data['pid'], cts=mediaset.cts)
+        url = mediaset.OttieniWidevineAuthUrl(data['pid'])
         headers = 'Accept=*/*&Content-Type=&User-Agent={useragent}'.format(useragent=useragent)
         props['license_key'] = '{url}|{headers}|R{{SSM}}|'.format(url=url, headers=headers)
 

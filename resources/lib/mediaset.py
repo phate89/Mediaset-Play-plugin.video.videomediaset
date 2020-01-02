@@ -325,3 +325,9 @@ class Mediaset(rutils.RUtils):
                         break
             break
         return res
+
+    def OttieniWidevineAuthUrl(self, uid):
+        return (
+            'https://widevine.entitlement.theplatform.eu/wv/web/ModularDrm/getRawWidevineLicense?'
+            'releasePid={pid}&account=http://access.auth.theplatform.com/data/Account/'
+            '2702976343&schema=1.0&token={cts}').format(pid=uid, cts=self.cts)

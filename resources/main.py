@@ -297,12 +297,6 @@ class KodiMediaset(object):
         self.__analizza_elenco(els, True)
         kodiutils.endScript()
 
-    def canali_live_root(self):
-        kodiutils.setContent('videos')
-        els = self.med.OttieniCanaliLive(sort='ShortTitle')
-        self.__analizza_elenco(els)
-        kodiutils.endScript()
-
     def guida_tv_root(self):
         kodiutils.setContent('videos')
         els = self.med.OttieniCanaliLive(sort='ShortTitle')
@@ -349,7 +343,7 @@ class KodiMediaset(object):
                                           videoInfo=infos, arts=arts, isFolder=False)
         kodiutils.endScript()
 
-    def canali_live_root_new(self):
+    def canali_live_root(self):
         kodiutils.setContent('videos')
         now = staticutils.get_timestamp()
         els = self.med.OttieniProgrammiLive()  # (sort='title')
@@ -359,32 +353,32 @@ class KodiMediaset(object):
                 for prog in chan['listings']:
                     if prog['startTime'] <= now <= prog['endTime']:
                         guid = chan['guid']
-                        chans[guid] = {'title': '{}:{}'.format(chan['title'],
-                                                               prog["mediasetlisting$epgTitle"]),
+                        chans[guid] = {'title': '{} - {}'.format(chan['title'],
+                                                                 prog["mediasetlisting$epgTitle"]),
                                        'infos': _gather_info(prog),
                                        'arts': _gather_art(prog),
                                        'restartAllowed': prog['mediasetlisting$restartAllowed']}
-        els = self.med.OttieniCanaliLive()
+        els = self.med.OttieniCanaliLive(sort='ShortTitle')
         for prog in els:
             if (prog['callSign'] in chans and 'tuningInstruction' in prog and
                     prog['tuningInstruction'] and not prog['mediasetstation$eventBased']):
                 chn = chans[prog['callSign']]
                 if chn['arts'] == {}:
                     chn['arts'] = _gather_art(prog)
-                if chn['restartAllowed']:
-                    kodiutils.addListItem(chn['title'],
-                                          {'mode': 'live', 'guid': prog['callSign']},
-                                          videoInfo=chn['infos'], arts=chn['arts'])
-                else:
-                    data = {'mode': 'live'}
-                    vdata = prog['tuningInstruction']['urn:theplatform:tv:location:any']
-                    for v in vdata:
-                        if v['format'] == 'application/x-mpegURL':
-                            data['id'] = v['releasePids'][0]
-                        else:
-                            data['mid'] = v['releasePids'][0]
-                    kodiutils.addListItem(chn['title'], data,
-                                          videoInfo=chn['infos'], arts=chn['arts'], isFolder=False)
+                # if chn['restartAllowed']:
+                #     kodiutils.addListItem(chn['title'],
+                #                           {'mode': 'live', 'guid': prog['callSign']},
+                #                           videoInfo=chn['infos'], arts=chn['arts'])
+                # else:
+                data = {'mode': 'live'}
+                vdata = prog['tuningInstruction']['urn:theplatform:tv:location:any']
+                for v in vdata:
+                    if v['format'] == 'application/x-mpegURL':
+                        data['id'] = v['releasePids'][0]
+                    else:
+                        data['mid'] = v['releasePids'][0]
+                kodiutils.addListItem(chn['title'], data,
+                                      videoInfo=chn['infos'], arts=chn['arts'], isFolder=False)
         kodiutils.endScript()
 
     def canali_live_play(self, guid):

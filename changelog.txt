@@ -1,4 +1,5 @@
 [B]2.0.1[/B]
+- added details of live event in  live channels section
 - improved performance reusing python env
 - improved element sorting
 - added editions visualization for programs

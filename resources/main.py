@@ -36,18 +36,18 @@ class KodiMediaset(object):
             return 'movies'
         return 'videos'
 
-    def __analizza_elenco(self, progs, setcontent=False):
+    def __analizza_elenco(self, progs, setcontent=False, titlewd=False):
         if not progs:
             return
         if setcontent:
             self.__imposta_tipo_media(progs[0])
         for prog in progs:
-            infos = _gather_info(prog)
+            infos = _gather_info(prog, titlewd=titlewd)
             arts = _gather_art(prog)
             if 'media' in prog:
                 # salta se non ha un media ma ha il tag perchè non riproducibile
                 if prog['media']:
-                    kodiutils.addListItem(prog["title"],
+                    kodiutils.addListItem(infos["title"],
                                           {'mode': 'video', 'pid': prog['media'][0]['pid']},
                                           videoInfo=infos, arts=arts, isFolder=False)
             elif 'tuningInstruction' in prog:
@@ -110,10 +110,11 @@ class KodiMediaset(object):
                     'episodi': 'CWSEARCHEPISODE', 'film': 'CWSEARCHMOVIE'}
         sezcode = switcher.get(sez)
         if text:
-            els, hasmore = self.med.Cerca(
-                text, sezcode, pageels=self.iperpage, page=page)
+            els, hasmore = self.med.Cerca(text, sezcode, pageels=self.iperpage, page=page)
             if els:
-                self.__analizza_elenco(els, True)
+                exttitle = {'programmi': False, 'clip': True,
+                            'episodi': True, 'film': False}
+                self.__analizza_elenco(els, True, titlewd=exttitle.get(sez, False))
                 if hasmore:
                     kodiutils.addListItem(kodiutils.LANGUAGE(32130),
                                           {'mode': 'cerca', 'search': text, 'type': sez,
@@ -336,7 +337,7 @@ class KodiMediaset(object):
                         el['startTime']).strftime("%H:%M")
                     e_time = staticutils.get_date_from_timestamp(
                         el['endTime']).strftime("%H:%M")
-                    s = "{s}:{e} - {t}".format(s=s_time, e=e_time,
+                    s = "{s}-{e} - {t}".format(s=s_time, e=e_time,
                                                t=el['mediasetlisting$epgTitle'])
                     kodiutils.addListItem(s,
                                           {'mode': 'video', 'guid': el['program']['guid']},

@@ -1,11 +1,14 @@
-def _gather_info(prog, infos=None):
+def _gather_info(prog, titlewd=False, infos=None):
     if infos is None:
         infos = {}
-    if 'title' not in infos and 'title' in prog:
-        infos['title'] = prog["title"]
-    if ('title' not in infos or infos['title'] ==
-            '') and 'mediasetprogram$brandTitle' in prog:
-        infos['title'] = prog["mediasetprogram$brandTitle"]
+    if 'title' not in infos:
+        if 'title' in prog:
+            infos['title'] = prog["title"]
+        elif 'mediasetprogram$brandTitle' in prog:
+            infos['title'] = prog["mediasetprogram$brandTitle"]
+        if (titlewd and 'mediasetprogram$brandTitle' in prog and
+                prog['mediasetprogram$brandTitle'] != ''):
+            infos['title'] = '{} - {}'.format(prog['mediasetprogram$brandTitle'], infos['title'])
 
     if 'credits' in prog:
         if 'cast' not in infos:
@@ -72,7 +75,7 @@ def _gather_info(prog, infos=None):
         infos['episode'] = prog['tvSeasonEpisodeNumber']
 
     if 'program' in prog:
-        return _gather_info(prog['program'], infos)
+        return _gather_info(prog['program'], titlewd=titlewd, infos=infos)
     return infos
 
 

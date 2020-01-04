@@ -279,7 +279,7 @@ def elenco_sezione(sid, page=None):
 
 
 def elenco_stagioni_list(seriesId, title):
-    els = mediaset.OttieniStagioni(seriesId)
+    els = mediaset.OttieniStagioni(seriesId, sort='startYear|desc')
     if len(els) == 1:
         elenco_sezioni_list(els[0]['mediasettvseason$brandId'])
     else:
@@ -297,7 +297,7 @@ def elenco_stagioni_list(seriesId, title):
 
 
 def elenco_sezioni_list(brandId):
-    els = mediaset.OttieniSezioniProgramma(brandId)
+    els = mediaset.OttieniSezioniProgramma(brandId, sort='mediasetprogram$order')
     if len(els) == 2:
         elenco_video_list(els[1]['mediasetprogram$subBrandId'])
     else:
@@ -307,21 +307,22 @@ def elenco_sezioni_list(brandId):
 
 
 def elenco_video_list(subBrandId):
-    els = mediaset.OttieniVideoSezione(subBrandId)
+    els = mediaset.OttieniVideoSezione(
+        subBrandId, sort='mediasetprogram$publishInfo_lastPublished')
     __analizza_elenco(els, True)
     kodiutils.endScript()
 
 
 def canali_live_root():
     kodiutils.setContent('videos')
-    els = mediaset.OttieniCanaliLive()
+    els = mediaset.OttieniCanaliLive(sort='ShortTitle')
     __analizza_elenco(els)
     kodiutils.endScript()
 
 
 def guida_tv_root():
     kodiutils.setContent('videos')
-    els = mediaset.OttieniCanaliLive()
+    els = mediaset.OttieniCanaliLive(sort='ShortTitle')
     for prog in els:
         infos = __gather_info(prog)
         arts = __gather_art(prog)
@@ -368,7 +369,7 @@ def guida_tv_canale_giorno(cid, dt):
 def canali_live_root_new():
     kodiutils.setContent('videos')
     now = staticutils.get_timestamp()
-    els = mediaset.OttieniProgrammiLive()
+    els = mediaset.OttieniProgrammiLive()  # (sort='title')
     chans = {}
     for chan in els:
         if 'listings' in chan and chan['listings']:

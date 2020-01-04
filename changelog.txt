@@ -1,5 +1,6 @@
 [B]2.0.1[/B]
 
+- improved element sorting
 - added editions visualization for programs
 - fixed case of valid video without media info (no way to play it)
 - improved media type and info detection

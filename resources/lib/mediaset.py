@@ -94,8 +94,8 @@ class Mediaset(rutils.RUtils):
         self.log('Retrieved keys successfully', 4)
         return True
 
-    def __getEntriesFromUrl(self, url):
-        data = self.getJson(url)
+    def __getEntriesFromUrl(self, url, args=None):
+        data = self.getJson(self.__create_url(url, args))
         if data and 'entries' in data:
             return data['entries']
         return data
@@ -139,9 +139,14 @@ class Mediaset(rutils.RUtils):
             args['traceCid'] = self.__tracecid
         if passkeys and self.__cwid:
             args['cwId'] = self.__cwid
-        if base.endswith('?'):
-            return base + urlencode(args)
-        return base + '?' + urlencode(args)
+        return self.__create_url(base, args)
+
+    def __create_url(self, url, args=None):
+        if args is None:
+            return url
+        if url.endswith('?'):
+            return url + urlencode(args)
+        return url + '?' + urlencode(args)
 
     def __createAZUrl(self, categories=None, query=None, inonda=None, pageels=100, page=None):
         args = {"query": query if query else "*:*"}
@@ -216,30 +221,35 @@ class Mediaset(rutils.RUtils):
             pageels=pageels, page=page, args={'platform': 'pc', 'uxReference': gid})
         return self.__getElsFromUrl(url)
 
-    def OttieniStagioni(self, seriesId):
+    def OttieniStagioni(self, seriesId, sort=None):
         self.log('Trying to get the seasons from series id {}'.format(seriesId), 4)
-        url = ('https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-tv-seasons/'
-               'feed?bySeriesId={seriesId}&sort=startYear|desc').format(seriesId=seriesId)
-        return self.__getEntriesFromUrl(url)
+        url = 'https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-tv-seasons/feed'
+        args = {'bySeriesId': seriesId}
+        if sort:
+            args['sort'] = sort
+        return self.__getEntriesFromUrl(url, args)
 
-    def OttieniSezioniProgramma(self, brandId):
+    def OttieniSezioniProgramma(self, brandId, sort=None):
         self.log('Trying to get the sections from brand id {}'.format(brandId), 4)
-        # &sort=mediasetprogram$order
-        url = ('https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-brands?'
-               'byCustomValue={{brandId}}{{{brandId}}}').format(brandId=brandId)
-        return self.__getEntriesFromUrl(url)
+        url = 'https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-brands?'
+        args = {'byCustomValue': '{{brandId}}{{{brandId}}}'.format(brandId=brandId)}
+        if sort:
+            args['sort'] = sort
+        return self.__getEntriesFromUrl(url, args)
 
-    def OttieniVideoSezione(self, subBrandId):
+    def OttieniVideoSezione(self, subBrandId, sort=None):
         self.log('Trying to get the videos from section {}'.format(subBrandId), 4)
-        # &sort=mediasetprogram$publishInfo_lastPublished|desc
-        url = ('https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-programs?'
-               'byCustomValue={{subBrandId}}{{{subBrandId}}}').format(subBrandId=subBrandId)
-        return self.__getEntriesFromUrl(url)
+        url = 'https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-programs'
+        args = {'byCustomValue': '{{subBrandId}}{{{subBrandId}}}'.format(subBrandId=subBrandId)}
+        if sort:
+            args['sort'] = sort
+        return self.__getEntriesFromUrl(url, args)
 
-    def OttieniCanaliLive(self):
+    def OttieniCanaliLive(self, sort=None):
         self.log('Trying to get the live channels list', 4)
-        url = ('https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-stations?'
-               'sort=ShortTitle')
+        url = ('https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-stations?')
+        if sort:
+            return self.__getEntriesFromUrl(url, {'sort': sort})
         return self.__getEntriesFromUrl(url)
 
     def Cerca(self, query, section=None, pageels=100, page=None):
@@ -264,10 +274,12 @@ class Mediaset(rutils.RUtils):
             return {}
         return res
 
-    def OttieniProgrammiLive(self):
+    def OttieniProgrammiLive(self, sort=None):
         self.log('Trying to get the live programs', 4)
         now = staticutils.get_timestamp()
-        args = {'byListingTime': '{s}~{f}'.format(s=str(now - 1001), f=str(now)), 'sort': 'title'}
+        args = {'byListingTime': '{s}~{f}'.format(s=str(now - 1001), f=str(now))}
+        if sort:
+            args['sort'] = sort
         url = self.__createMediasetUrl(
             "https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-listings?",
             pageels=None, page=None, args=args, passkeys=False)

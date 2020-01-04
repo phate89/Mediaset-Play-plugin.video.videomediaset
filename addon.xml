@@ -19,6 +19,7 @@
         <forum>https://forum.kodi.tv/showthread.php?tid=292876</forum>
         <source>https://github.com/phate89/plugin.video.videomediaset</source>
         <news>2.0.1
+- improved element sorting
 - added editions visualization for programs
 - fixed case of valid video without media info (no way to play it)
 - improved media type and info detection

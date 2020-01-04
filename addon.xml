@@ -18,7 +18,9 @@
         <license>GPL-2.0-only</license>
         <forum>https://forum.kodi.tv/showthread.php?tid=292876</forum>
         <source>https://github.com/phate89/plugin.video.videomediaset</source>
+        <reuselanguageinvoker>true</reuselanguageinvoker>
         <news>2.0.1
+- improved performance reusing python env
 - improved element sorting
 - added editions visualization for programs
 - fixed case of valid video without media info (no way to play it)

@@ -1,14 +1,14 @@
 from phate89lib import kodiutils  # pylint: disable=import-error
 
 
-def __get_date_string(dt):
+def _get_date_string(dt):
     fmt = kodiutils.getRegion('datelong')
     fmt = fmt.replace("%A", kodiutils.KODILANGUAGE(dt.weekday() + 11))
     fmt = fmt.replace("%B", kodiutils.KODILANGUAGE(dt.month + 20))
     return dt.strftime(kodiutils.py2_encode(fmt))
 
 
-def __gather_info(prog, infos=None):
+def _gather_info(prog, infos=None):
     if infos is None:
         infos = {}
     if 'title' not in infos and 'title' in prog:
@@ -82,11 +82,11 @@ def __gather_info(prog, infos=None):
         infos['episode'] = prog['tvSeasonEpisodeNumber']
 
     if 'program' in prog:
-        return __gather_info(prog['program'], infos)
+        return _gather_info(prog['program'], infos)
     return infos
 
 
-def __gather_art(prog):
+def _gather_art(prog):
     arts = {}
     if 'thumbnails' in prog:
         if 'image_vertical-264x396' in prog['thumbnails']:
@@ -109,5 +109,5 @@ def __gather_art(prog):
         if 'brand_logo-210x210' in prog['thumbnails']:
             arts['icon'] = prog['thumbnails']['brand_logo-210x210']['url']
     elif 'program' in prog:
-        return __gather_art(prog['program'])
+        return _gather_art(prog['program'])
     return arts

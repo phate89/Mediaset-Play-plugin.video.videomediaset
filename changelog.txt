@@ -1,5 +1,5 @@
 [B]2.0.1[/B]
-
+- improved performance reusing python env
 - improved element sorting
 - added editions visualization for programs
 - fixed case of valid video without media info (no way to play it)

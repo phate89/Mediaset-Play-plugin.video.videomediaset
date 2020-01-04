@@ -1,63 +1,66 @@
-from phate89lib import kodiutils
+from phate89lib import kodiutils  # pylint: disable=import-error
+
 
 def __get_date_string(dt):
     fmt = kodiutils.getRegion('datelong')
-    fmt = fmt.replace("%A",kodiutils.KODILANGUAGE(dt.weekday() + 11))
-    fmt = fmt.replace("%B",kodiutils.KODILANGUAGE(dt.month + 20))
+    fmt = fmt.replace("%A", kodiutils.KODILANGUAGE(dt.weekday() + 11))
+    fmt = fmt.replace("%B", kodiutils.KODILANGUAGE(dt.month + 20))
     return dt.strftime(kodiutils.py2_encode(fmt))
+
 
 def __gather_info(prog, infos=None):
     if infos is None:
-        infos={}
+        infos = {}
     if 'title' not in infos and 'title' in prog:
-        infos['title']=prog["title"]
-    if ('title' not in infos  or infos['title'] == '') and 'mediasetprogram$brandTitle' in prog:
-        infos['title']=prog["mediasetprogram$brandTitle"]
-    
+        infos['title'] = prog["title"]
+    if ('title' not in infos or infos['title'] ==
+            '') and 'mediasetprogram$brandTitle' in prog:
+        infos['title'] = prog["mediasetprogram$brandTitle"]
+
     if 'credits' in prog:
         if 'cast' not in infos:
             infos['cast'] = []
         if 'director' not in infos:
             infos['director'] = []
         for person in prog['credits']:
-            if person['creditType']=='actor':
+            if person['creditType'] == 'actor':
                 infos['cast'].append(person['personName'])
-            elif person['creditType']=='director':
+            elif person['creditType'] == 'director':
                 infos['director'].append(person['personName'])
 
     if not ('plot' in infos or 'plotoutline' in infos):
-        plot=""
-        plotoutline=""
-        #try to find plotoutline
+        plot = ""
+        plotoutline = ""
+        # try to find plotoutline
         if 'shortDescription' in prog:
-            plotoutline=prog["shortDescription"]
+            plotoutline = prog["shortDescription"]
         elif 'mediasettvseason$shortDescription' in prog:
-            plotoutline=prog["mediasettvseason$shortDescription"]
+            plotoutline = prog["mediasettvseason$shortDescription"]
         elif 'description' in prog:
-            plotoutline=prog["description"]
+            plotoutline = prog["description"]
         elif 'mediasetprogram$brandDescription' in prog:
-            plotoutline=prog["mediasetprogram$brandDescription"]
+            plotoutline = prog["mediasetprogram$brandDescription"]
         elif 'mediasetprogram$subBrandDescription' in prog:
-            plotoutline=prog["mediasetprogram$subBrandDescription"]
-            
-        #try to find plot
+            plotoutline = prog["mediasetprogram$subBrandDescription"]
+
+        # try to find plot
         if 'longDescription' in prog:
-            plot=prog["longDescription"]
+            plot = prog["longDescription"]
         elif 'description' in prog:
-            plotoutline=prog["description"]
+            plotoutline = prog["description"]
         elif 'mediasetprogram$brandDescription' in prog:
-            plot=prog["mediasetprogram$brandDescription"]
+            plot = prog["mediasetprogram$brandDescription"]
         elif 'mediasetprogram$subBrandDescription' in prog:
-            plot=prog["mediasetprogram$subBrandDescription"]
-            
-        #fill the other if one is empty
-        if plot=="":
-            plot=plotoutline
-        if plotoutline=="":
-            plotoutline=plot
+            plot = prog["mediasetprogram$subBrandDescription"]
+
+        # fill the other if one is empty
+        if plot == "":
+            plot = plotoutline
+        if plotoutline == "":
+            plotoutline = plot
         infos['plot'] = plot
         infos['plotoutline'] = plotoutline
-        
+
     if 'genre' not in infos:
         infos['genre'] = []
     if 'mediasetprogram$genres' in prog:
@@ -72,15 +75,16 @@ def __gather_info(prog, infos=None):
     if 'duration' not in infos and 'mediasetprogram$duration' in prog:
         infos['duration'] = prog['mediasetprogram$duration']
     if 'year' not in infos and 'year' in prog:
-        infos['year']=prog['year']
+        infos['year'] = prog['year']
     if 'season' not in infos and 'tvSeasonNumber' in prog:
-        infos['season']=prog['tvSeasonNumber']
+        infos['season'] = prog['tvSeasonNumber']
     if 'episode' not in infos and 'tvSeasonEpisodeNumber' in prog:
-        infos['episode']=prog['tvSeasonEpisodeNumber']
-        
+        infos['episode'] = prog['tvSeasonEpisodeNumber']
+
     if 'program' in prog:
-        return __gather_info(prog['program'],infos)
+        return __gather_info(prog['program'], infos)
     return infos
+
 
 def __gather_art(prog):
     arts = {}
@@ -91,7 +95,7 @@ def __gather_art(prog):
         elif 'channel_logo-100x100' in prog['thumbnails']:
             arts['poster'] = prog['thumbnails']['channel_logo-100x100']['url']
             arts['thumb'] = arts['poster']
-            
+
         if 'brand_cover-1440x513' in prog['thumbnails']:
             arts['banner'] = prog['thumbnails']['brand_cover-1440x513']['url']
         elif 'image_header_poster-1440x630' in prog['thumbnails']:

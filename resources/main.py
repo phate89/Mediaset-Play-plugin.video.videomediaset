@@ -355,7 +355,8 @@ class KodiMediaset(object):
                     if prog['startTime'] <= now <= prog['endTime']:
                         guid = chan['guid']
                         chans[guid] = {'title': '{} - {}'.format(chan['title'],
-                                                                 prog["mediasetlisting$epgTitle"]),
+                                                                 kodiutils.py2_encode(
+                                                                     prog["mediasetlisting$epgTitle"])),
                                        'infos': _gather_info(prog),
                                        'arts': _gather_art(prog),
                                        'restartAllowed': prog['mediasetlisting$restartAllowed']}
@@ -366,11 +367,18 @@ class KodiMediaset(object):
                 chn = chans[prog['callSign']]
                 if chn['arts'] == {}:
                     chn['arts'] = _gather_art(prog)
-                # if chn['restartAllowed']:
-                #     kodiutils.addListItem(chn['title'],
-                #                           {'mode': 'live', 'guid': prog['callSign']},
-                #                           videoInfo=chn['infos'], arts=chn['arts'])
-                # else:
+                if chn['restartAllowed']:
+                    if kodiutils.getSettingAsBool('splitlive'):
+                        kodiutils.addListItem(chn['title'], {'mode': 'live',
+                                                             'guid': prog['callSign']},
+                                              videoInfo=chn['infos'], arts=chn['arts'])
+                        continue
+                    vid = self.__ottieni_vid_restart(prog['callSign'])
+                    if vid:
+                        kodiutils.addListItem(chn['title'], {'mode': 'video', 'pid': vid},
+                                              videoInfo=chn['infos'], arts=chn['arts'],
+                                              isFolder=False)
+                        continue
                 data = {'mode': 'live'}
                 vdata = prog['tuningInstruction']['urn:theplatform:tv:location:any']
                 for v in vdata:
@@ -382,8 +390,24 @@ class KodiMediaset(object):
                                       videoInfo=chn['infos'], arts=chn['arts'], isFolder=False)
         kodiutils.endScript()
 
+    def __ottieni_vid_restart(self, guid):
+        res = self.med.OttieniLiveStream(guid)
+        if ('currentListing' in res[0] and
+                res[0]['currentListing']['mediasetlisting$restartAllowed']):
+            url = res[0]['currentListing']['restartUrl']
+            return url.rpartition('/')[-1]
+        return None
+
     def canali_live_play(self, guid):
         res = self.med.OttieniLiveStream(guid)
+        infos = {}
+        arts = {}
+        title = ''
+        if 'currentListing' in res[0]:
+            self.__imposta_tipo_media(res[0]['currentListing']['program'])
+            infos = _gather_info(res[0]['currentListing'])
+            arts = _gather_art(res[0]['currentListing']['program'])
+            title = ' - ' + infos['title']
         if 'tuningInstruction' in res[0]:
             data = {'mode': 'live'}
             vdata = res[0]['tuningInstruction']['urn:theplatform:tv:location:any']
@@ -392,13 +416,14 @@ class KodiMediaset(object):
                     data['id'] = v['releasePids'][0]
                 else:
                     data['mid'] = v['releasePids'][0]
-            kodiutils.addListItem(kodiutils.LANGUAGE(32137), data, isFolder=False)
+            kodiutils.addListItem(kodiutils.LANGUAGE(32137) + title, data, videoInfo=infos,
+                                  arts=arts, isFolder=False)
         if ('currentListing' in res[0] and
                 res[0]['currentListing']['mediasetlisting$restartAllowed']):
             url = res[0]['currentListing']['restartUrl']
             vid = url.rpartition('/')[-1]
-            kodiutils.addListItem(kodiutils.LANGUAGE(
-                32138), {'mode': 'video', 'pid': vid}, isFolder=False)
+            kodiutils.addListItem(kodiutils.LANGUAGE(32138) + title, {'mode': 'video', 'pid': vid},
+                                  videoInfo=infos, arts=arts, isFolder=False)
         kodiutils.endScript()
 
     def riproduci_guid(self, guid):
@@ -421,7 +446,9 @@ class KodiMediaset(object):
             kodiutils.showOkDialog(kodiutils.LANGUAGE(32132), kodiutils.LANGUAGE(32133))
             kodiutils.setResolvedUrl(solved=False)
             return
-        props = {'manifest_type': 'mpd'}
+        headers = '&User-Agent={useragent}'.format(
+            useragent=self.ua)
+        props = {'manifest_type': 'mpd', 'stream_headers': headers}
         if data['security']:
             user = kodiutils.getSetting('email')
             password = kodiutils.getSetting('password')
@@ -433,10 +460,10 @@ class KodiMediaset(object):
                 kodiutils.showOkDialog(kodiutils.LANGUAGE(32132), kodiutils.LANGUAGE(32135))
                 kodiutils.setResolvedUrl(solved=False)
                 return
+            headers += '&Accept=*/*&Content-Type='
             props['license_type'] = 'com.widevine.alpha'
+            props['stream_headers'] = headers
             url = self.med.OttieniWidevineAuthUrl(data['pid'])
-            headers = 'Accept=*/*&Content-Type=&User-Agent={useragent}'.format(
-                useragent=self.ua)
             props['license_key'] = '{url}|{headers}|R{{SSM}}|'.format(url=url, headers=headers)
 
         headers = {'user-agent': self.ua,

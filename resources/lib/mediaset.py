@@ -20,7 +20,7 @@ class Mediaset(rutils.RUtils):
         self.__tracecid = ''
         self.__cwid = ''
         self.anonymousLogin()
-        super(rutils.RUtils, self).__init__()
+        rutils.RUtils.__init__(self)
 
     def __getAPISession(self):
         res = self.SESSION.get(

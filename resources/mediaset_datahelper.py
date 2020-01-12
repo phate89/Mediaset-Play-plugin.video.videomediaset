@@ -1,6 +1,34 @@
-def _gather_info(prog, titlewd=False, infos=None):
+
+def _gather_media_type(prog):
+    if 'programType' in prog:
+        if prog['programType'] == 'movie':
+            return 'movie'
+        if prog['programType'] == 'episode':
+            return 'episode'
+    if ('mediasetprogram$brandVerticalSiteCMS' in prog and
+            prog['mediasetprogram$brandVerticalSiteCMS'] == 'fiction'):
+        return 'tvshow'
+    if 'tvSeasonNumber' in prog or 'tvSeasonEpisodeNumber' in prog:
+        return 'episode'
+    if 'seriesId' in prog and 'mediasetprogram$subBrandId' not in prog:
+        return 'tvshow'
+    if ('mediasetprogram$subBrandDescription' in prog and
+            (prog['mediasetprogram$subBrandDescription'].lower() == 'film' or
+             prog['mediasetprogram$subBrandDescription'].lower() == 'documentario')):
+        return 'movie'
+    return 'video'
+
+
+def _gather_info(prog, titlewd=False, mediatype=None, infos=None):
     if infos is None:
         infos = {}
+
+    if 'mediatype' not in infos:
+        if mediatype:
+            infos['mediatype'] = mediatype
+        else:
+            infos['mediatype'] = _gather_media_type(prog)
+
     if 'title' not in infos:
         if 'title' in prog:
             infos['title'] = prog["title"]
@@ -37,9 +65,9 @@ def _gather_info(prog, titlewd=False, infos=None):
             plotoutline = prog["mediasetprogram$subBrandDescription"]
 
         # try to find plot
-        if 'longDescription' in prog:
-            plot = prog["longDescription"]
-        elif 'description' in prog:
+        # if 'longDescription' in prog: # longDescription sometimes has -
+        #    plot = prog["longDescription"]
+        if 'description' in prog:
             plotoutline = prog["description"]
         elif 'mediasetprogram$brandDescription' in prog:
             plot = prog["mediasetprogram$brandDescription"]
@@ -73,6 +101,9 @@ def _gather_info(prog, titlewd=False, infos=None):
         infos['season'] = prog['tvSeasonNumber']
     if 'episode' not in infos and 'tvSeasonEpisodeNumber' in prog:
         infos['episode'] = prog['tvSeasonEpisodeNumber']
+
+    if ('season' in infos and 'episode' in infos):
+        infos['tvshowtitle'] = prog['mediasetprogram$brandTitle']
 
     if 'program' in prog:
         return _gather_info(prog['program'], titlewd=titlewd, infos=infos)

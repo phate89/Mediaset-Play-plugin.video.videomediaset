@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta
 from resources.lib.mediaset import Mediaset
-from resources.mediaset_datahelper import _gather_info, _gather_art
+from resources.mediaset_datahelper import _gather_info, _gather_art, _gather_media_type
 from phate89lib import kodiutils, staticutils  # pylint: disable=import-error
 
 
@@ -15,26 +15,7 @@ class KodiMediaset(object):
                    '(KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36')
 
     def __imposta_tipo_media(self, prog):
-        kodiutils.setContent(self.__ottieni_tipo_media(prog))
-
-    def __ottieni_tipo_media(self, prog):
-        if 'programType' in prog:
-            if prog['programType'] == 'movie':
-                return 'movies'
-            if prog['programType'] == 'episode':
-                return 'episodes'
-        if ('mediasetprogram$brandVerticalSiteCMS' in prog and
-                prog['mediasetprogram$brandVerticalSiteCMS'] == 'fiction'):
-            return 'tvshows'
-        if 'tvSeasonNumber' in prog or 'tvSeasonEpisodeNumber' in prog:
-            return 'episodes'
-        if 'seriesId' in prog and 'mediasetprogram$subBrandId' not in prog:
-            return 'tvshows'
-        if ('mediasetprogram$subBrandDescription' in prog and
-                (prog['mediasetprogram$subBrandDescription'].lower() == 'film' or
-                 prog['mediasetprogram$subBrandDescription'].lower() == 'documentario')):
-            return 'movies'
-        return 'videos'
+        kodiutils.setContent(_gather_media_type(prog) + 's')
 
     def __analizza_elenco(self, progs, setcontent=False, titlewd=False):
         if not progs:

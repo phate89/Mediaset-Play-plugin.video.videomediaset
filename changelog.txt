@@ -1,3 +1,21 @@
+[B]2.0.1[/B]
+- added support for live restart (manually jump to start after you start play right now)
+- added brand title in episode and clip search to have better info
+- added details of live event in  live channels section
+- improved performance reusing python env
+- improved element sorting
+- added editions visualization for programs
+- fixed case of valid video without media info (no way to play it)
+- improved media type and info detection
+- fixed next page search
+
+[B]2.0.0[/B]
+- rewrite the addon for the new website (Mediaset Play)
+- added support for login and widevine protected content (requires inputstream and widevine libraries)
+- added search function
+- added page size setting to limit items (default 500)
+- added tv guide support
+
 [B]1.3.2[/B]
 - fixed live channel urls (thx to LEOSCHUMY)
 

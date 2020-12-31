@@ -28,8 +28,13 @@ class KodiMediaset(object):
             if 'media' in prog:
                 # salta se non ha un media ma ha il tag perchè non riproducibile
                 if prog['media']:
-                    kodiutils.addListItem(infos["title"],
-                                          {'mode': 'video', 'pid': prog['media'][0]['pid']},
+                    media = prog['media'][0]
+                    args = {'mode': 'video'}
+                    if 'pid' in media:
+                        args['pid'] = media['pid']
+                    elif 'publicUrl' in media:
+                        args['pid'] = media['publicUrl'].split('/')[-1]
+                    kodiutils.addListItem(infos["title"], args,
                                           videoInfo=infos, arts=arts, isFolder=False)
             elif 'tuningInstruction' in prog:
                 data = {'mode': 'live'}

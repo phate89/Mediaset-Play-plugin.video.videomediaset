@@ -20,12 +20,118 @@ class Mediaset(rutils.RUtils):
         self.__tracecid = ''
         self.__cwid = ''
         self.anonymousLogin()
+        self.uxReferenceMapping = {
+            'CWDOCUBIOSTORIE': 'documentariBioStoria',
+            'CWDOCUINCHIESTE': 'documentariInchiesta',
+            'CWDOCUMOSTRECENT': 'mostRecentDocumentariFep',
+            'CWDOCUNATURANIMALI': 'documentariNatura',
+            'CWDOCUSCIENZATECH': 'documentariScienza',
+            'CWDOCUSPAZIO': 'documentariSpazio',
+            'CWDOCUTOPVIEWED': 'stagioniDocumentari',
+            'CWENABLERKIDS': 'stagioniKids',
+            'CWFICTIONADVENTURE': 'stagioniFictionAvventura',
+            'CWFICTIONBIOGRAPHICAL': 'stagioniFictionBiografico',
+            'CWFICTIONCOMEDY': 'stagioniFictionCommedia',
+            'CWFICTIONDRAMATIC': 'stagioniFictionDrammatico',
+            'CWFICTIONPOLICE': 'stagioniFictionPoliziesco',
+            'CWFICTIONSENTIMENTAL': 'stagioniFictionSentimentale',
+            'CWFICTIONSITCOM': 'stagioniFictionSitCom',
+            'CWFICTIONSOAP': 'mostRecentSoapOpera',
+            'CWFILMACTION': 'filmAzioneThrillerAvventura',
+            'CWFILMCLASSIC': 'filmClassici',
+            'CWFILMCOMEDY': 'filmCommedia',
+            'CWFILMDOCU': 'filmDocumentario',
+            'CWFILMDRAMATIC': 'filmDrammatico',
+            'CWFILMSENTIMENTAL': 'filmSentimentale',
+            'CWFILMTOPVIEWED': 'filmPiuVisti24H',
+            'CWHOMEBRANDS': 'personToContentHomepage',
+            'CWHOMEFICTIONNOWELITE': 'stagioniFictionSerieTvSezione',
+            'CWHOMEFICTIONNOWPOP': 'stagioniFictionSerieTvHomepage',
+            'CWHOMEPROGTVNOW': 'stagioniProgrammiTv',
+            'CWKIDSBOINGFORYOU': 'kidsBoing',
+            'CWKIDSCARTOONITO': 'kidsCartoonito',
+            'CWKIDSMEDIASETBRAND': 'kidsMediaset',
+            'CWPROGTVDAY': 'stagioniDaytime',
+            'CWPROGTVMAGAZINE': 'stagioniCucinaLifestyle',
+            'CWPROGTVPRIME': 'stagioniPrimaSerata',
+            'CWPROGTVSPORT': 'mostRecentSport',
+            'CWPROGTVTALENT': 'stagioniReality',
+            'CWPROGTVTALK': 'stagioniTalk',
+            'CWPROGTVTG': 'mostRecentTg',
+            'CWPROGTVTOPVIEWED': 'programmiTvClip24H',
+            'CWPROGTVVARIETY': 'stagioniVarieta',
+            'CWSEARCHBRAND': 'searchStagioni',
+            'CWSEARCHCLIP': 'searchClip',
+            'CWSEARCHEPISODE': 'searchEpisodi',
+            'CWSEARCHMOVIE': 'searchMovie',
+            'CWSIMILARDOCUMENTARI': 'similarDocumentari',
+            'CWSIMILARFICTION': 'similarSerieTvFiction',
+            'CWSIMILARFILM': 'similarCinema',
+            'CWSIMILARINFORMAZIONE': 'similarInformazione',
+            'CWSIMILARINTRATTENIMENTO': 'similarIntrattenimento',
+            'CWSIMILARKIDS': 'similarCartoni',
+            'CWSIMILARSERIETV': 'similarSerieTvFiction',
+            'CWSIMILARSPORT': 'similarSport',
+            'CWSIMILARTG': 'similarTg',
+            'CWTOPSEARCHBRAND': 'defaultSearchStagioni',
+            'CWTOPSEARCHCLIP': 'defaultSearchVideo',
+            'CWTOPVIEWEDDAY': 'piuVisti24H',
+            'documentariBioStoria': 'documentariBioStoria',
+            'documentariInchiesta': 'documentariInchiesta',
+            'documentariNatura': 'documentariNatura',
+            'documentariScienza': 'documentariScienza',
+            'documentariSpazio': 'documentariSpazio',
+            'filmAzioneThrillerAvventura': 'filmAzioneThrillerAvventura',
+            'filmClassici': 'filmClassici',
+            'filmCommedia': 'filmCommedia',
+            'filmDocumentario': 'filmDocumentario',
+            'filmDrammatico': 'filmDrammatico',
+            'filmPiuVisti24H': 'filmPiuVisti24H',
+            'filmSentimentale': 'filmSentimentale',
+            'kidsBoing': 'kidsBoing',
+            'kidsCartoonito': 'kidsCartoonito',
+            'kidsMediaset': 'kidsMediaset',
+            'mostRecentDocumentariFep': 'mostRecentDocumentariFep',
+            'mostRecentSoapOpera': 'mostRecentSoapOpera',
+            'mostRecentSport': 'mostRecentSport',
+            'mostRecentTg': 'mostRecentTg',
+            'personToContentFilm': 'personToContentFilm',
+            'personToContentHomepage': 'personToContentHomepage',
+            'piuVisti24H': 'piuVisti24H',
+            'programmiTvClip24H': 'programmiTvClip24H',
+            'similarCartoni': 'similarCartoni',
+            'similarCinema': 'similarCinema',
+            'similarDocumentari': 'similarDocumentari',
+            'similarInformazione': 'similarInformazione',
+            'similarIntrattenimento': 'similarIntrattenimento',
+            'similarSerieTvFiction': 'similarSerieTvFiction',
+            'similarSport': 'similarSport',
+            'similarTg': 'similarTg',
+            'stagioniCucinaLifestyle': 'stagioniCucinaLifestyle',
+            'stagioniDaytime': 'stagioniDaytime',
+            'stagioniDocumentari': 'stagioniDocumentari',
+            'stagioniFictionAvventura': 'stagioniFictionAvventura',
+            'stagioniFictionBiografico': 'stagioniFictionBiografico',
+            'stagioniFictionCommedia': 'stagioniFictionCommedia',
+            'stagioniFictionDrammatico': 'stagioniFictionDrammatico',
+            'stagioniFictionPoliziesco': 'stagioniFictionPoliziesco',
+            'stagioniFictionSentimentale': 'stagioniFictionSentimentale',
+            'stagioniFictionSerieTvHomepage': 'stagioniFictionSerieTvHomepage',
+            'stagioniFictionSerieTvSezione': 'stagioniFictionSerieTvSezione',
+            'stagioniFictionSitCom': 'stagioniFictionSitCom',
+            'stagioniKids': 'stagioniKids',
+            'stagioniPrimaSerata': 'stagioniPrimaSerata',
+            'stagioniProgrammiTv': 'stagioniProgrammiTv',
+            'stagioniReality': 'stagioniReality',
+            'stagioniTalk': 'stagioniTalk',
+            'stagioniVarieta': 'stagioniVarieta'
+        }
         rutils.RUtils.__init__(self)
 
     def __getAPISession(self):
         res = self.SESSION.get(
             "https://api.one.accedo.tv/session?appKey=59ad346f1de1c4000dfd09c5&uuid=sdd",
-            verify=False)
+            verify=True)
         self.setHeader('x-session', res.json()['sessionKey'])
 
     def login(self, user, password):
@@ -80,7 +186,7 @@ class Mediaset(rutils.RUtils):
                     "platform": "pc",
                     "appName": "web/mediasetplay-web/576ea90"}
             url = "https://api-ott-prod-fe.mediaset.net/PROD/play/idm/anonymous/login/v1.0"
-        res = self.SESSION.post(url, json=data, verify=False)
+        res = self.SESSION.post(url, json=data, verify=True)
         jsn = res.json()
         if not jsn['isOk']:
             return False
@@ -135,6 +241,8 @@ class Mediaset(rutils.RUtils):
             args['hitsPerPage'] = pageels
         if page and 'page' not in args:
             args['page'] = str(page)
+        if 'page' not in args and 'hitsPerPage' in args:
+            args['page'] = '1'
         if passkeys and self.__tracecid:
             args['traceCid'] = self.__tracecid
         if passkeys and self.__cwid:
@@ -217,8 +325,8 @@ class Mediaset(rutils.RUtils):
     def OttieniProgrammiGenere(self, gid, pageels=100, page=None):
         self.log('Trying to get the programs from section id ' + gid, 4)
         url = self.__createMediasetUrl(
-            "https://api-ott-prod-fe.mediaset.net/PROD/play/rec/cataloguelisting/v1.0?",
-            pageels=pageels, page=page, args={'platform': 'pc', 'uxReference': gid})
+            "https://api-ott-prod-fe.mediaset.net/PROD/play/rec2/cataloguelisting/v1.0",
+            pageels=pageels, page=page, args={'platform': 'pc', 'uxReference': self.uxReferenceMapping[gid]})
         return self.__getElsFromUrl(url)
 
     def OttieniStagioni(self, seriesId, sort=None):
@@ -255,9 +363,8 @@ class Mediaset(rutils.RUtils):
     def Cerca(self, query, section=None, pageels=100, page=None):
         args = {'query': query, 'platform': 'pc'}
         if section:
-            args['uxReference'] = section
-        url = self.__createMediasetUrl(('https://api-ott-prod-fe.mediaset.net/PROD/play/rec/search/'
-                                        'v1.0?'), pageels=pageels, page=page, args=args)
+            args['uxReference'] = self.uxReferenceMapping[section]
+        url = self.__createMediasetUrl('https://api-ott-prod-fe.mediaset.net/PROD/play/rec2/search/v1.0', pageels=pageels, page=page, args=args)
         return self.__getElsFromUrl(url)
 
     def OttieniGuidaTV(self, chid, start, finish):

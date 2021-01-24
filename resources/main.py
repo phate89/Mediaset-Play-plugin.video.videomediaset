@@ -28,8 +28,13 @@ class KodiMediaset(object):
             if 'media' in prog:
                 # salta se non ha un media ma ha il tag perchè non riproducibile
                 if prog['media']:
-                    kodiutils.addListItem(infos["title"],
-                                          {'mode': 'video', 'pid': prog['media'][0]['pid']},
+                    media = prog['media'][0]
+                    args = {'mode': 'video'}
+                    if 'pid' in media:
+                        args['pid'] = media['pid']
+                    elif 'publicUrl' in media:
+                        args['pid'] = media['publicUrl'].split('/')[-1]
+                    kodiutils.addListItem(infos["title"], args,
                                           videoInfo=infos, arts=arts, isFolder=False)
             elif 'tuningInstruction' in prog:
                 data = {'mode': 'live'}
@@ -64,8 +69,8 @@ class KodiMediaset(object):
                                       videoInfo=infos, arts=arts)
 
     def root(self):
-        kodiutils.addListItem(kodiutils.LANGUAGE(32101), {'mode': 'tutto'})
-        kodiutils.addListItem(kodiutils.LANGUAGE(32106), {'mode': 'programmi'})
+        # kodiutils.addListItem(kodiutils.LANGUAGE(32101), {'mode': 'tutto'})
+        # kodiutils.addListItem(kodiutils.LANGUAGE(32106), {'mode': 'programmi'})
         kodiutils.addListItem(kodiutils.LANGUAGE(32102), {'mode': 'fiction'})
         kodiutils.addListItem(kodiutils.LANGUAGE(32103), {'mode': 'film'})
         kodiutils.addListItem(kodiutils.LANGUAGE(32104), {'mode': 'kids'})
@@ -159,8 +164,8 @@ class KodiMediaset(object):
         kodiutils.endScript()
 
     def elenco_fiction_root(self):
-        kodiutils.addListItem(kodiutils.LANGUAGE(32121), {'mode': 'fiction', 'all': 'true'})
-        kodiutils.addListItem(kodiutils.LANGUAGE(32122), {'mode': 'fiction', 'all': 'false'})
+        # kodiutils.addListItem(kodiutils.LANGUAGE(32121), {'mode': 'fiction', 'all': 'true'})
+        # kodiutils.addListItem(kodiutils.LANGUAGE(32122), {'mode': 'fiction', 'all': 'false'})
         for sec in self.med.OttieniGeneriFiction():
             if ("uxReference" not in sec):
                 continue
@@ -180,7 +185,7 @@ class KodiMediaset(object):
         kodiutils.endScript()
 
     def elenco_film_root(self):
-        kodiutils.addListItem(kodiutils.LANGUAGE(32121), {'mode': 'film', 'all': 'true'})
+        # kodiutils.addListItem(kodiutils.LANGUAGE(32121), {'mode': 'film', 'all': 'true'})
         for sec in self.med.OttieniGeneriFilm():
             if ("uxReference" not in sec):
                 continue
@@ -199,7 +204,7 @@ class KodiMediaset(object):
         kodiutils.endScript()
 
     def elenco_kids_root(self):
-        kodiutils.addListItem(kodiutils.LANGUAGE(32121), {'mode': 'kids', 'all': 'true'})
+        # kodiutils.addListItem(kodiutils.LANGUAGE(32121), {'mode': 'kids', 'all': 'true'})
         for sec in self.med.OttieniGeneriKids():
             if ("uxReference" not in sec):
                 continue
@@ -218,7 +223,7 @@ class KodiMediaset(object):
         kodiutils.endScript()
 
     def elenco_documentari_root(self):
-        kodiutils.addListItem("Tutto", {'mode': 'documentari', 'all': 'true'})
+        # kodiutils.addListItem("Tutto", {'mode': 'documentari', 'all': 'true'})
         for sec in self.med.OttieniGeneriDocumentari():
             if ("uxReference" not in sec):
                 continue

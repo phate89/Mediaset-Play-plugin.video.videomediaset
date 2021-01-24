@@ -1,4 +1,5 @@
 [B]2.0.1[/B]
+- removed letter sorting (not available anymore) and fixed endpoints after website change (thx to typhoon51280)
 - added support for live restart (manually jump to start after you start play right now)
 - added brand title in episode and clip search to have better info
 - added details of live event in  live channels section

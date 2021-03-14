@@ -1,6 +1,6 @@
 import json
 import xml.etree.ElementTree as ET
-from phate89lib import rutils, staticutils  # pylint: disable=import-error
+from phate89lib import kodiutils, rutils, staticutils  # pylint: disable=import-error
 try:
     from urllib.parse import urlencode, quote
 except ImportError:
@@ -333,6 +333,7 @@ class Mediaset(rutils.RUtils):
         self.log('Trying to get the seasons from series id {}'.format(seriesId), 4)
         url = 'https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-tv-seasons/feed'
         args = {'bySeriesId': seriesId}
+        args['range'] = '0-' + kodiutils.getSetting('itemsperpage')
         if sort:
             args['sort'] = sort
         return self.__getEntriesFromUrl(url, args)
@@ -341,6 +342,7 @@ class Mediaset(rutils.RUtils):
         self.log('Trying to get the sections from brand id {}'.format(brandId), 4)
         url = 'https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-brands?'
         args = {'byCustomValue': '{{brandId}}{{{brandId}}}'.format(brandId=brandId)}
+        args['range'] = '0-' + kodiutils.getSetting('itemsperpage')
         if sort:
             args['sort'] = sort
         return self.__getEntriesFromUrl(url, args)
@@ -349,6 +351,7 @@ class Mediaset(rutils.RUtils):
         self.log('Trying to get the videos from section {}'.format(subBrandId), 4)
         url = 'https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-programs'
         args = {'byCustomValue': '{{subBrandId}}{{{subBrandId}}}'.format(subBrandId=subBrandId)}
+        args['range'] = '0-' + kodiutils.getSetting('itemsperpage')
         if sort:
             args['sort'] = sort
         return self.__getEntriesFromUrl(url, args)
@@ -356,12 +359,14 @@ class Mediaset(rutils.RUtils):
     def OttieniCanaliLive(self, sort=None):
         self.log('Trying to get the live channels list', 4)
         url = ('https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-all-stations?')
+        args['range'] = '0-' + kodiutils.getSetting('itemsperpage')
         if sort:
             return self.__getEntriesFromUrl(url, {'sort': sort})
         return self.__getEntriesFromUrl(url)
 
     def Cerca(self, query, section=None, pageels=100, page=None):
         args = {'query': query, 'platform': 'pc'}
+        args['range'] = '0-' + kodiutils.getSetting('itemsperpage')
         if section:
             args['uxReference'] = self.uxReferenceMapping[section]
         url = self.__createMediasetUrl('https://api-ott-prod-fe.mediaset.net/PROD/play/rec2/search/v1.0', pageels=pageels, page=page, args=args)
@@ -371,6 +376,7 @@ class Mediaset(rutils.RUtils):
         self.log(('Trying to get the tv guide from {} channel '
                   'starting {} finishing {}').format(chid, str(start), str(finish)), 4)
         args = {'byCallSign': chid, 'byListingTime': '{s}~{f}'.format(s=str(start), f=str(finish))}
+        args['range'] = '0-' + kodiutils.getSetting('itemsperpage')
         url = self.__createMediasetUrl(
             "https://api-ott-prod-fe.mediaset.net/PROD/play/alive/allListingFeedEpg/v1.0?",
             pageels=None, page=None, args=args)
@@ -385,6 +391,7 @@ class Mediaset(rutils.RUtils):
         self.log('Trying to get the live programs', 4)
         now = staticutils.get_timestamp()
         args = {'byListingTime': '{s}~{f}'.format(s=str(now - 1001), f=str(now))}
+        args['range'] = '0-' + kodiutils.getSetting('itemsperpage')
         if sort:
             args['sort'] = sort
         url = self.__createMediasetUrl(

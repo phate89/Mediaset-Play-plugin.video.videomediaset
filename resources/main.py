@@ -14,6 +14,10 @@ class KodiMediaset(object):
         self.ua = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
                    '(KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36')
 
+    def __imposta_range(self):
+        limit = '0-' + kodiutils.getSetting('itemsperpage')
+        return limit
+
     def __imposta_tipo_media(self, prog):
         kodiutils.setContent(_gather_media_type(prog) + 's')
 
@@ -253,7 +257,7 @@ class KodiMediaset(object):
         kodiutils.endScript()
 
     def elenco_stagioni_list(self, seriesId, title):
-        els = self.med.OttieniStagioni(seriesId, sort='startYear|desc')
+        els = self.med.OttieniStagioni(seriesId, sort='startYear|desc', range=self.__imposta_range())
         if len(els) == 1:
             self.elenco_sezioni_list(els[0]['mediasettvseason$brandId'])
         else:
@@ -270,7 +274,7 @@ class KodiMediaset(object):
                 self.elenco_sezioni_list(brandId)
 
     def elenco_sezioni_list(self, brandId):
-        els = self.med.OttieniSezioniProgramma(brandId, sort='mediasetprogram$order')
+        els = self.med.OttieniSezioniProgramma(brandId, sort='mediasetprogram$order', range=self.__imposta_range())
         if len(els) == 2:
             self.elenco_video_list(els[1]['mediasetprogram$subBrandId'])
         else:
@@ -280,13 +284,13 @@ class KodiMediaset(object):
 
     def elenco_video_list(self, subBrandId):
         els = self.med.OttieniVideoSezione(
-            subBrandId, sort='mediasetprogram$publishInfo_lastPublished')
+            subBrandId, sort='mediasetprogram$publishInfo_lastPublished', range=self.__imposta_range())
         self.__analizza_elenco(els, True)
         kodiutils.endScript()
 
     def guida_tv_root(self):
         kodiutils.setContent('videos')
-        els = self.med.OttieniCanaliLive(sort='ShortTitle')
+        els = self.med.OttieniCanaliLive(sort='ShortTitle', range=self.__imposta_range())
         for prog in els:
             infos = _gather_info(prog)
             arts = _gather_art(prog)

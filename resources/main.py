@@ -349,7 +349,7 @@ class KodiMediaset(object):
                 for prog in chan['listings']:
                     if prog['startTime'] <= now <= prog['endTime']:
                         guid = chan['guid']
-                        chans[guid] = {'title': '{} - {}'.format(chan['title'],
+                        chans[guid] = {'title': '{} - {}'.format(kodiutils.py2_encode(chan['title']),
                                                                  kodiutils.py2_encode(
                                                                      prog["mediasetlisting$epgTitle"])),
                                        'infos': _gather_info(prog),

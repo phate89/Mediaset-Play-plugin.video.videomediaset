@@ -10,12 +10,12 @@ class KodiMediaset(object):
     def __init__(self):
         self.med = Mediaset()
         self.med.log = kodiutils.log
-        self.iperpage = kodiutils.getSetting('itemsperpage')
+        self.iperpage = int(kodiutils.getSetting('itemsperpage'))
         self.ua = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
                    '(KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36')
 
-    def __imposta_range(self):
-        limit = '0-' + kodiutils.getSetting('itemsperpage')
+    def __imposta_range(self, start):
+        limit = '{}-{}'.format(start, start + self.iperpage-1)
         return limit
 
     def __imposta_tipo_media(self, prog):
@@ -257,7 +257,7 @@ class KodiMediaset(object):
         kodiutils.endScript()
 
     def elenco_stagioni_list(self, seriesId, title):
-        els = self.med.OttieniStagioni(seriesId, sort='startYear|desc', range=self.__imposta_range())
+        els = self.med.OttieniStagioni(seriesId, sort='startYear|desc')
         if len(els) == 1:
             self.elenco_sezioni_list(els[0]['mediasettvseason$brandId'])
         else:
@@ -274,23 +274,28 @@ class KodiMediaset(object):
                 self.elenco_sezioni_list(brandId)
 
     def elenco_sezioni_list(self, brandId):
-        els = self.med.OttieniSezioniProgramma(brandId, sort='mediasetprogram$order', range=self.__imposta_range())
+        els = self.med.OttieniSezioniProgramma(
+            brandId, sort='mediasetprogram$order')
         if len(els) == 2:
-            self.elenco_video_list(els[1]['mediasetprogram$subBrandId'])
+            self.elenco_video_list(els[1]['mediasetprogram$subBrandId'], 1)
         else:
             els.pop(0)
             self.__analizza_elenco(els)
         kodiutils.endScript()
 
-    def elenco_video_list(self, subBrandId):
+    def elenco_video_list(self, subBrandId, start):
         els = self.med.OttieniVideoSezione(
-            subBrandId, sort='mediasetprogram$publishInfo_lastPublished', range=self.__imposta_range())
+            subBrandId, sort='mediasetprogram$publishInfo_lastPublished', range=self.__imposta_range(start))
         self.__analizza_elenco(els, True)
+        if len(els) == self.iperpage:
+            kodiutils.addListItem(kodiutils.LANGUAGE(32130),
+                                  {'mode': 'programma', 'sub_brand_id': subBrandId,
+                                   'start': start + self.iperpage})
         kodiutils.endScript()
 
     def guida_tv_root(self):
         kodiutils.setContent('videos')
-        els = self.med.OttieniCanaliLive(sort='ShortTitle', range=self.__imposta_range())
+        els = self.med.OttieniCanaliLive(sort='ShortTitle')
         for prog in els:
             infos = _gather_info(prog)
             arts = _gather_art(prog)
@@ -522,7 +527,10 @@ class KodiMediaset(object):
                 if 'series_id' in params:
                     self.elenco_stagioni_list(params['series_id'], params['title'])
                 elif 'sub_brand_id' in params:
-                    self.elenco_video_list(params['sub_brand_id'])
+                    if 'start' in params:
+                        self.elenco_video_list(params['sub_brand_id'], int(params['start']))
+                    else:
+                        self.elenco_video_list(params['sub_brand_id'], 1)
                 elif 'brand_id' in params:
                     self.elenco_sezioni_list(params['brand_id'])
             if params['mode'] == "video":

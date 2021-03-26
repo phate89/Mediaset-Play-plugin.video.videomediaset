@@ -1,3 +1,5 @@
+- removed workaround that created problems with loading seasons in shows like striscia
+
 [B]2.0.3[/B]
 - fixed live channel list loading in pre-matrix with spechial characters (thx to madpilot78)
 - added paging for videos

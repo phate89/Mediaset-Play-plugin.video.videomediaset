@@ -129,9 +129,8 @@ class Mediaset(rutils.RUtils):
         rutils.RUtils.__init__(self)
 
     def __getAPISession(self):
-        res = self.SESSION.get(
-            "https://api.one.accedo.tv/session?appKey=59ad346f1de1c4000dfd09c5&uuid=sdd",
-            verify=True)
+        res = self.createRequest(
+            "https://api.one.accedo.tv/session?appKey=59ad346f1de1c4000dfd09c5&uuid=sdd")
         self.setHeader('x-session', res.json()['sessionKey'])
 
     def login(self, user, password):

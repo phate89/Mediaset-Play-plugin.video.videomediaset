@@ -57,7 +57,7 @@ class KodiMediaset(object):
                                        'sub_brand_id': prog['mediasetprogram$subBrandId']},
                                       videoInfo=infos, arts=arts)
             elif 'mediasettvseason$brandId' in prog:
-                kodiutils.addListItem(prog["title"],
+                kodiutils.addListItem(prog["mediasettvseason$displaySeason"],
                                       {'mode': 'programma',
                                        'brand_id': prog['mediasettvseason$brandId']},
                                       videoInfo=infos, arts=arts)
@@ -256,22 +256,13 @@ class KodiMediaset(object):
                     32130), {'mode': 'sezione', 'id': sid, 'page': page + 1 if page else 2})
         kodiutils.endScript()
 
-    def elenco_stagioni_list(self, seriesId, title):
+    def elenco_stagioni_list(self, seriesId):
         els = self.med.OttieniStagioni(seriesId, sort='startYear|desc')
         if len(els) == 1:
             self.elenco_sezioni_list(els[0]['mediasettvseason$brandId'])
         else:
-            # workaround per controllare se è già una stagione e non una serie
-            brandId = -1
-            for el in els:
-                if el['title'] == title:
-                    brandId = el['mediasettvseason$brandId']
-                    break
-            if brandId == -1:
-                self.__analizza_elenco(els)
-                kodiutils.endScript()
-            else:
-                self.elenco_sezioni_list(brandId)
+            self.__analizza_elenco(els)
+            kodiutils.endScript()
 
     def elenco_sezioni_list(self, brandId):
         els = self.med.OttieniSezioniProgramma(
@@ -525,7 +516,7 @@ class KodiMediaset(object):
                 self.elenco_sezione(params['id'])
             if params['mode'] == "programma":
                 if 'series_id' in params:
-                    self.elenco_stagioni_list(params['series_id'], params['title'])
+                    self.elenco_stagioni_list(params['series_id'])
                 elif 'sub_brand_id' in params:
                     if 'start' in params:
                         self.elenco_video_list(params['sub_brand_id'], int(params['start']))

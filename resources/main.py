@@ -349,7 +349,7 @@ class KodiMediaset(object):
         els = self.med.OttieniCanaliLive(sort='ShortTitle')
         for prog in els:
             if (prog['callSign'] in chans and 'tuningInstruction' in prog and
-                    prog['tuningInstruction'] and not prog['mediasetstation$eventBased']):
+                    prog['tuningInstruction'] and not prog.get('mediasetstation$eventBased', False)):
                 chn = chans[prog['callSign']]
                 if chn['arts'] == {}:
                     chn['arts'] = _gather_art(prog)

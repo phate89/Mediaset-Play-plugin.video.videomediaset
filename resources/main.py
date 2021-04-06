@@ -291,7 +291,7 @@ class KodiMediaset(object):
             infos = _gather_info(prog)
             arts = _gather_art(prog)
             if 'tuningInstruction' in prog:
-                if prog['tuningInstruction'] and not prog['mediasetstation$eventBased']:
+                if prog['tuningInstruction'] and not prog.get('mediasetstation$eventBased', False):
                     kodiutils.addListItem(prog["title"],
                                           {'mode': 'guida_tv', 'id': prog['callSign'],
                                            'week': staticutils.get_timestamp_midnight()},
@@ -349,7 +349,7 @@ class KodiMediaset(object):
         els = self.med.OttieniCanaliLive(sort='ShortTitle')
         for prog in els:
             if (prog['callSign'] in chans and 'tuningInstruction' in prog and
-                    prog['tuningInstruction'] and not prog['mediasetstation$eventBased']):
+                    prog['tuningInstruction'] and not prog.get('mediasetstation$eventBased', False)):
                 chn = chans[prog['callSign']]
                 if chn['arts'] == {}:
                     chn['arts'] = _gather_art(prog)

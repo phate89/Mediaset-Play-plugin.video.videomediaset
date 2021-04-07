@@ -290,6 +290,10 @@ class Mediaset(rutils.RUtils):
         url = self.__createAZUrl(["Fiction"], inonda=inonda, pageels=pageels, page=page)
         return self.__getElsFromUrl(url)
 
+    def OttieniCategorieProgrammi(self):
+        self.log('Trying to get the programs sections list', 4)
+        return self.__getsectionsFromEntryID("5acfc8011de1c4000b6ec953")
+
     def OttieniGeneriFiction(self):
         self.log('Trying to get the fiction sections list', 4)
         return self.__getsectionsFromEntryID("5acfcb3c23eec6000d64a6a4")
@@ -372,7 +376,8 @@ class Mediaset(rutils.RUtils):
         args = {'query': query, 'platform': 'pc'}
         if section:
             args['uxReference'] = self.uxReferenceMapping[section]
-        url = self.__createMediasetUrl('https://api-ott-prod-fe.mediaset.net/PROD/play/rec2/search/v1.0', pageels=pageels, page=page, args=args)
+        url = self.__createMediasetUrl(
+            'https://api-ott-prod-fe.mediaset.net/PROD/play/rec2/search/v1.0', pageels=pageels, page=page, args=args)
         return self.__getElsFromUrl(url)
 
     def OttieniGuidaTV(self, chid, start, finish):

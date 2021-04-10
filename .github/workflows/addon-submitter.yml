@@ -17,9 +17,9 @@ jobs:
       uses: xbmc/action-kodi-addon-submitter@v1.1
       with: # Replace all the below values
         kodi-repository: repo-plugins
-        kodi-version: krypton
+        kodi-version: matrix
         addon-id: plugin.video.videomediaset
-        kodi-matrix: true # Submit a Python 2/3 compatible addon to matrix branch in addition to the target branch
+        kodi-matrix: false # Submit a Python 2/3 compatible addon to matrix branch in addition to the target branch
       env: # Make sure you create the below secrets (GH_TOKEN and EMAIL)
         GH_USERNAME: ${{ github.actor }}
         GH_TOKEN: ${{secrets.GH_TOKEN}}

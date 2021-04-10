@@ -1,3 +1,4 @@
+[B]2.0.6[/B]
 - update name and branding after mediaset branding change
 - Fix assets request after site change
 

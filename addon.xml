@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.videomediaset" name="Mediaset Play Infinity" provider-name="phate89, aracnoz" version="2.0.5">
+<addon id="plugin.video.videomediaset" name="Mediaset Play Infinity" provider-name="phate89, aracnoz" version="2.0.6">
     <requires>
         <import addon="xbmc.python" version="2.25.0" />
         <import addon="script.module.phate89" version="1.2.1"/>
@@ -19,11 +19,9 @@
         <forum>https://forum.kodi.tv/showthread.php?tid=292876</forum>
         <source>https://github.com/phate89/plugin.video.videomediaset</source>
         <reuselanguageinvoker>true</reuselanguageinvoker>
-        <news>2.0.5
-- restore Programmi tv in home page
-2.0.4
-- fixed loading of live channels and tv guide for a missing property (thx to madpilot78)
-- removed workaround that created problems with loading seasons in shows like striscia
+        <news>2.0.6
+- update name and branding after mediaset branding change
+- Fix assets request after site change
         </news>
         <assets>
             <icon>resources/icon.png</icon>

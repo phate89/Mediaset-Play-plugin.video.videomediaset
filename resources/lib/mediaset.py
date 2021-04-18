@@ -185,7 +185,7 @@ class Mediaset(rutils.RUtils):
                     "platform": "pc",
                     "appName": "web/mediasetplay-web/576ea90"}
             url = "https://api-ott-prod-fe.mediaset.net/PROD/play/idm/anonymous/login/v1.0"
-        res = self.SESSION.post(url, json=data, verify=True)
+        res = self.SESSION.post(url, json=data, verify=False)
         jsn = res.json()
         if not jsn['isOk']:
             return False

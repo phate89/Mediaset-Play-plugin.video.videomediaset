@@ -279,8 +279,12 @@ class KodiMediaset(object):
         kodiutils.endScript()
 
     def elenco_video_list(self, subBrandId, start):
+        if (kodiutils.getSettingAsBool('sortmediaset')):
+            sort = 'mediasetprogram$publishInfo_lastPublished|desc'
+        else:
+            sort = 'mediasetprogram$publishInfo_lastPublished'
         els = self.med.OttieniVideoSezione(
-            subBrandId, sort='mediasetprogram$publishInfo_lastPublished', erange=self.__imposta_range(start))
+            subBrandId, sort=sort, erange=self.__imposta_range(start))
         self.__analizza_elenco(els, True)
         if len(els) == self.iperpage:
             kodiutils.addListItem(kodiutils.LANGUAGE(32130),

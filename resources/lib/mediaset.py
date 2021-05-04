@@ -1,6 +1,6 @@
 import json
 import xml.etree.ElementTree as ET
-from phate89lib import rutils, staticutils  # pylint: disable=import-error
+from phate89lib import kodiutils, rutils, staticutils  # pylint: disable=import-error
 try:
     from urllib.parse import urlencode, quote
 except ImportError:
@@ -428,7 +428,7 @@ class Mediaset(rutils.RUtils):
                     '&assetTypes=HD,browser,widevine,geoIT|geoNo:HD,browser,geoIT|geoNo:HD,'
                     'geoIT|geoNo:SD,''browser,widevine,geoIT|geoNo:SD,browser,geoIT|geoNo:SD,'
                     'geoIT|geoNo')
-        text = self.getText(u)
+        text = kodiutils.py2_encode(self.getText(u))
         res = {'url': '', 'pid': '', 'type': '', 'security': False}
         root = ET.fromstring(text)
         for vid in root.findall('.//{http://www.w3.org/2005/SMIL21/Language}switch'):

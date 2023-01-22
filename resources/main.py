@@ -126,7 +126,7 @@ class kodiutils:
             url = staticutils.parameters(params)
         else:
             url = params
-        item = createListItem(label=label, params=params, label2=label2, thumb=thumb, fanart=fanart, poster=poster, arts=arts, videoInfo=videoInfo, properties=properties, subs=subs, ifFolder=isFolder)
+        item = createListItem(label=label, params=params, label2=label2, thumb=thumb, fanart=fanart, poster=poster, arts=arts, videoInfo=videoInfo, properties=properties, subs=subs, isFolder=isFolder)
         return xbmcplugin.addDirectoryItem(handle=HANDLE, url=url, listitem=item, isFolder=isFolder)
 
 

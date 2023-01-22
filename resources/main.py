@@ -28,7 +28,7 @@ IMAGE_PATH_T = os.path.join(PATH_T, 'resources', 'media', "")
 LANGUAGE = ADDON.getLocalizedString
 KODILANGUAGE = xbmc.getLocalizedString
 
-    HANDLE = int(sys.argv[1])
+HANDLE = int(sys.argv[1])
 
 
 class kodiutils:

@@ -121,8 +121,7 @@ class kodiutils:
         return item
 
 
-    def addListItem(label?"", params=None, label2=None, thumb=None, fanart=None, poster=None, arts=None,
-                    videoInfo=None, properties=None, isFolder=True, path=None, subs=None):
+    def addListItem(label?"", params=None, label2=None, thumb=None, fanart=None, poster=None, arts=None, videoInfo=None, properties=None, isFolder=True, path=None, subs=None):
 
         if isinstance(params, dict):
             url = staticutils.parameters(params)
@@ -135,8 +134,7 @@ class kodiutils:
         return xbmcplugin.addDirectoryItem(handle=HANDLE, url=url, listitem=item, isFolder=isFolder)
 
 
-    def setResolvedUrl(url="", solved=True, subs=None, headers=None, ins=None, insdata=None, item=None, 
-                       exit=True):
+    def setResolvedUrl(url="", solved=True, subs=None, headers=None, ins=None, insdata=None, item=None, exit=True):
         headerUrl = ""
         if headers:
             headerUrl = urlencode(headers)
@@ -161,9 +159,7 @@ class kodiutils:
         else:
             tUrl = {'action': 'download', 'url': sUrl}
         log("Add subtitle '" + subtitlename + "' to the kist", 3)
-        return addListItem(label="Italian", label2=subtitlename, params=tUrl, thumb="it",
-                           properties={"sync": 'true' if sync else 'false', "hearing_imp": "false"},
-                           isFolder=False)
+        return addListItem(label="Italian", label2=subtitlename, params=tUrl, thumb="it", properties={"sync": 'true' if sync else 'false', "hearing_imp": "false"}, isFolder=False)
 
 
     def setContent(ctype='videos'):

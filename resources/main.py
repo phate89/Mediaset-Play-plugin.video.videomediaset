@@ -42,7 +42,7 @@ class kodiutils:
 
 
     def log(msg, level=2):
-        message = u'%s: %s' % (ID, msg)
+        message = u'%s: %s' % (ADDON.getAddonInfo('id'), msg)
         if level > 1:
             xbmc.log(msg=message, level=xbmc.LOGDEBUG)
         else:

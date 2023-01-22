@@ -126,7 +126,26 @@ class kodiutils:
             url = staticutils.parameters(params)
         else:
             url = params
-        item = createListItem(label=label, params=params, label2=label2, thumb=thumb, fanart=fanart, poster=poster, arts=arts, videoInfo=videoInfo, properties=properties, subs=subs, isFolder=isFolder)
+        if arts is None:
+            arts = {}
+        if properties is None:
+            properties = {}
+        item = xbmcgui.ListItem(label, label2, path)
+        if thumb:
+            arts['thumb'] = thumb
+        if fanart:
+            arts['fanart'] = fanart
+        if poster:
+            arts['poster'] = poster
+        item.setArt(arts)
+        item.setInfo('video', videoInfo)
+        if subs is not None:
+            item.setSubtitles(subs)
+        if not isFolder:
+            properties['IsPlayable'] = 'true'
+        for key, value in list(properties.items()):
+            item.setProperty(key, value)
+            
         return xbmcplugin.addDirectoryItem(handle=HANDLE, url=url, listitem=item, isFolder=isFolder)
 
 

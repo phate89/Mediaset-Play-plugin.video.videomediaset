@@ -121,7 +121,7 @@ class kodiutils:
         return item
 
 
-    def addListItem(label?"", params=None, label2=None, thumb=None, fanart=None, poster=None, arts=None, videoInfo=None, properties=None, isFolder=True, path=None, subs=None):
+    def addListItem(label="", params=None, label2=None, thumb=None, fanart=None, poster=None, arts=None, videoInfo=None, properties=None, isFolder=True, path=None, subs=None):
 
         if isinstance(params, dict):
             url = staticutils.parameters(params)

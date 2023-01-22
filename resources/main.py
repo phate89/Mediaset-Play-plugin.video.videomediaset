@@ -27,7 +27,6 @@ DATA_PATH_T = xbmcvfs.translatePath(DATA_PATH)
 IMAGE_PATH_T = os.path.join(PATH_T, 'resources', 'media', "")
 LANGUAGE = ADDON.getLocalizedString
 KODILANGUAGE = xbmc.getLocalizedString
-SETTING = ADDON.getSetting(setting).strip()
 
 HANDLE = int(sys.argv[1])
 
@@ -60,8 +59,8 @@ class kodiutils:
         return s
 
 
-    #def getSetting(setting):
-    #    return ADDON.getSetting(setting).strip()
+    def getSetting(setting):
+        return ADDON.getSetting(setting).strip()
 
 
     def getSettingAsBool(setting):

@@ -3,6 +3,13 @@ Kodi Mediaset Play addon
 ===================================
 
 ### Info
+This is a fork of the original plugin. The only purpose of this fork is to make it work with Kodi v20.
+All the text below is from the original plugin.
+The fix was done by CristianSumma.
+
+New Manual Install: [Download ZIP](https://github.com/CristianSumma/Mediaset-Play-plugin.video.videomediaset/archive/refs/heads/master.zip)
+
+
 A kodi plugin to access Mediaset Play website and its content.
 The addon was originally created by Aracnoz. I updated it almost from scratch after site changes and with new features.
 
@@ -26,6 +33,7 @@ Require: [script.module.phate89 1.2.0](https://github.com/phate89/script.module.
 * To Aracnoz for the first addon version!
 * To Mediaset for provinding the content and the api!
 * To Wizy that provided fixes
+* To phate89 for the second addon version!
 
 ### Issues
 If you find some issue please post [in the forum](http://forum.xbmc.org/showthread.php?tid=292876) or [in the github issue page](https://github.com/phate89/Mediaset-Play-plugin.video.videomediaset/issues) with a [debug log](http://kodi.wiki/view/Debug_Log) and all the steps to reproduce the issue

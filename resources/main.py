@@ -16,22 +16,22 @@ import xbmcplugin
 import xbmcgui
 import xbmcvfs
 
-
-class kodiutils:
-    ADDON = xbmcaddon.Addon()
-    ID = ADDON.getAddonInfo('id')
-    NAME = ADDON.getAddonInfo('name')
-    VERSION = ADDON.getAddonInfo('version')
-    PATH = ADDON.getAddonInfo('path')
-    DATA_PATH = ADDON.getAddonInfo('profile')
-    PATH_T = xbmcvfs.translatePath(PATH)
-    DATA_PATH_T = xbmcvfs.translatePath(DATA_PATH)
-    IMAGE_PATH_T = os.path.join(PATH_T, 'resources', 'media', "")
-    LANGUAGE = ADDON.getLocalizedString
-    KODILANGUAGE = xbmc.getLocalizedString
+ADDON = xbmcaddon.Addon()
+ID = ADDON.getAddonInfo('id')
+NAME = ADDON.getAddonInfo('name')
+VERSION = ADDON.getAddonInfo('version')
+PATH = ADDON.getAddonInfo('path')
+DATA_PATH = ADDON.getAddonInfo('profile')
+PATH_T = xbmcvfs.translatePath(PATH)
+DATA_PATH_T = xbmcvfs.translatePath(DATA_PATH)
+IMAGE_PATH_T = os.path.join(PATH_T, 'resources', 'media', "")
+LANGUAGE = ADDON.getLocalizedString
+KODILANGUAGE = xbmc.getLocalizedString
 
     HANDLE = int(sys.argv[1])
 
+
+class kodiutils:
 
     def executebuiltin(func, block=False):
         xbmc.executebuiltin(func, block)
@@ -42,7 +42,7 @@ class kodiutils:
 
 
     def log(msg, level=2):
-        message = u'%s: %s' % (ADDON.getAddonInfo('id'), msg)
+        message = u'%s: %s' % (ID, msg)
         if level > 1:
             xbmc.log(msg=message, level=xbmc.LOGDEBUG)
         else:

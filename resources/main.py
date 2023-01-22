@@ -70,7 +70,7 @@ class kodiutils:
     def getSettingAsNum(setting):
         num = 0
         try:   
-            num = float(ADDON.getSetting(setting).strip)
+            num = float(ADDON.getSetting(setting).strip())
         except ValueError:
             pass
         return num

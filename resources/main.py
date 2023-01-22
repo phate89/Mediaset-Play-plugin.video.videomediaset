@@ -97,8 +97,7 @@ class kodiutils:
         xbmcgui.Dialog().ok(heading, line)
 
 
-    def createListItem(label="", params=None, label2=None, thumb=None, fanart=None, poster=None, arts=None, 
-                    videoInfo=None, properties=None, isFolder=True, path=None, subs=None):
+    def createListItem(label="", params=None, label2=None, thumb=None, fanart=None, poster=None, arts=None, videoInfo=None, properties=None, isFolder=True, path=None, subs=None):
         if arts is None:
             arts = {}
         if properties is None:

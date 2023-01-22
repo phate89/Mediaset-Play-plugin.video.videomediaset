@@ -64,7 +64,7 @@ class kodiutils:
 
 
     def getSettingAsBool(setting):
-        return ADDON.getSetting(setting).strip.lower() == "true"
+        return ADDON.getSetting(setting).strip().lower() == "true"
 
 
     def getSettingAsNum(setting):

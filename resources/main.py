@@ -319,26 +319,26 @@ class KodiMediaset(object):
                                       videoInfo=infos, arts=arts)
 
     def root(self):
-        # kodiutils.addListItem(kodiutils.LANGUAGE(32101), {'mode': 'tutto'})
-        kodiutils.addListItem(kodiutils.LANGUAGE(32106), {'mode': 'programmi'})
-        kodiutils.addListItem(kodiutils.LANGUAGE(32102), {'mode': 'fiction'})
-        kodiutils.addListItem(kodiutils.LANGUAGE(32103), {'mode': 'film'})
-        kodiutils.addListItem(kodiutils.LANGUAGE(32104), {'mode': 'kids'})
-        kodiutils.addListItem(kodiutils.LANGUAGE(32105), {'mode': 'documentari'})
-        kodiutils.addListItem(kodiutils.LANGUAGE(32111), {'mode': 'canali_live'})
-        kodiutils.addListItem(kodiutils.LANGUAGE(32113), {'mode': 'guida_tv'})
-        kodiutils.addListItem(kodiutils.LANGUAGE(32107), {'mode': 'cerca'})
+        # kodiutils.addListItem(LANGUAGE(32101), {'mode': 'tutto'})
+        kodiutils.addListItem(LANGUAGE(32106), {'mode': 'programmi'})
+        kodiutils.addListItem(LANGUAGE(32102), {'mode': 'fiction'})
+        kodiutils.addListItem(LANGUAGE(32103), {'mode': 'film'})
+        kodiutils.addListItem(LANGUAGE(32104), {'mode': 'kids'})
+        kodiutils.addListItem(LANGUAGE(32105), {'mode': 'documentari'})
+        kodiutils.addListItem(LANGUAGE(32111), {'mode': 'canali_live'})
+        kodiutils.addListItem(LANGUAGE(32113), {'mode': 'guida_tv'})
+        kodiutils.addListItem(LANGUAGE(32107), {'mode': 'cerca'})
         kodiutils.endScript()
 
     def elenco_cerca_root(self):
-        kodiutils.addListItem(kodiutils.LANGUAGE(32115), {'mode': 'cerca', 'type': 'programmi'})
-        kodiutils.addListItem(kodiutils.LANGUAGE(32116), {'mode': 'cerca', 'type': 'clip'})
-        kodiutils.addListItem(kodiutils.LANGUAGE(32117), {'mode': 'cerca', 'type': 'episodi'})
-        kodiutils.addListItem(kodiutils.LANGUAGE(32103), {'mode': 'cerca', 'type': 'film'})
+        kodiutils.addListItem(LANGUAGE(32115), {'mode': 'cerca', 'type': 'programmi'})
+        kodiutils.addListItem(LANGUAGE(32116), {'mode': 'cerca', 'type': 'clip'})
+        kodiutils.addListItem(LANGUAGE(32117), {'mode': 'cerca', 'type': 'episodi'})
+        kodiutils.addListItem(LANGUAGE(32103), {'mode': 'cerca', 'type': 'film'})
         kodiutils.endScript()
 
     def apri_ricerca(self, sez):
-        text = kodiutils.getKeyboardText(kodiutils.LANGUAGE(32131))
+        text = kodiutils.getKeyboardText(LANGUAGE(32131))
         self.elenco_cerca_sezione(sez, text, 1)
 
     def elenco_cerca_sezione(self, sez, text, page=None):
@@ -352,20 +352,20 @@ class KodiMediaset(object):
                             'episodi': True, 'film': False}
                 self.__analizza_elenco(els, True, titlewd=exttitle.get(sez, False))
                 if hasmore:
-                    kodiutils.addListItem(kodiutils.LANGUAGE(32130),
+                    kodiutils.addListItem(LANGUAGE(32130),
                                           {'mode': 'cerca', 'search': text, 'type': sez,
                                            'page': page + 1 if page else 2})
         kodiutils.endScript()
 
     def elenco_tutto_root(self):
-        kodiutils.addListItem(kodiutils.LANGUAGE(32121), {'mode': 'tutto', 'all': 'true'})
-        kodiutils.addListItem(kodiutils.LANGUAGE(32122), {'mode': 'tutto', 'all': 'false'})
+        kodiutils.addListItem(LANGUAGE(32121), {'mode': 'tutto', 'all': 'true'})
+        kodiutils.addListItem(LANGUAGE(32122), {'mode': 'tutto', 'all': 'false'})
         kodiutils.endScript()
 
     def elenco_tutto_lettere(self, inonda):
         letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
                    'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '#']
-        kodiutils.addListItem(kodiutils.LANGUAGE(
+        kodiutils.addListItem(LANGUAGE(
             32121), {'mode': 'tutto', 'all': 'false' if inonda else 'true', 'letter': 'all'})
         for letter in letters:
             kodiutils.addListItem(letter.upper(),
@@ -380,7 +380,7 @@ class KodiMediaset(object):
         if els:
             self.__analizza_elenco(els)
             if hasmore:
-                kodiutils.addListItem(kodiutils.LANGUAGE(32130),
+                kodiutils.addListItem(LANGUAGE(32130),
                                       {'mode': 'tutto', 'all': 'false' if inonda else 'true',
                                        'letter': lettera, 'page': page + 1 if page else 2})
         kodiutils.endScript()
@@ -391,14 +391,14 @@ class KodiMediaset(object):
         if els:
             self.__analizza_elenco(els)
             if hasmore:
-                kodiutils.addListItem(kodiutils.LANGUAGE(32130),
+                kodiutils.addListItem(LANGUAGE(32130),
                                       {'mode': 'tutto', 'all': 'false' if inonda else 'true',
                                        'letter': 'all', 'page': page + 1 if page else 2})
         kodiutils.endScript()
 
     def elenco_programmi_root(self):
-        # kodiutils.addListItem(kodiutils.LANGUAGE(32121), {'mode': 'programmi', 'all': 'true'})
-        # kodiutils.addListItem(kodiutils.LANGUAGE(32122), {'mode': 'programmi', 'all': 'false'})
+        # kodiutils.addListItem(LANGUAGE(32121), {'mode': 'programmi', 'all': 'true'})
+        # kodiutils.addListItem(LANGUAGE(32122), {'mode': 'programmi', 'all': 'false'})
         for sec in self.med.OttieniCategorieProgrammi():
             if ("uxReference" not in sec):
                 continue
@@ -412,14 +412,14 @@ class KodiMediaset(object):
         if els:
             self.__analizza_elenco(els)
             if hasmore:
-                kodiutils.addListItem(kodiutils.LANGUAGE(32130),
+                kodiutils.addListItem(LANGUAGE(32130),
                                       {'mode': 'programmi', 'all': 'false' if inonda else 'true',
                                        'page': page + 1 if page else 2})
         kodiutils.endScript()
 
     def elenco_fiction_root(self):
-        # kodiutils.addListItem(kodiutils.LANGUAGE(32121), {'mode': 'fiction', 'all': 'true'})
-        # kodiutils.addListItem(kodiutils.LANGUAGE(32122), {'mode': 'fiction', 'all': 'false'})
+        # kodiutils.addListItem(LANGUAGE(32121), {'mode': 'fiction', 'all': 'true'})
+        # kodiutils.addListItem(LANGUAGE(32122), {'mode': 'fiction', 'all': 'false'})
         for sec in self.med.OttieniGeneriFiction():
             if ("uxReference" not in sec):
                 continue
@@ -433,13 +433,13 @@ class KodiMediaset(object):
         if els:
             self.__analizza_elenco(els)
             if hasmore:
-                kodiutils.addListItem(kodiutils.LANGUAGE(32130),
+                kodiutils.addListItem(LANGUAGE(32130),
                                       {'mode': 'fiction', 'all': 'false' if inonda else 'true',
                                        'page': page + 1 if page else 2})
         kodiutils.endScript()
 
     def elenco_film_root(self):
-        # kodiutils.addListItem(kodiutils.LANGUAGE(32121), {'mode': 'film', 'all': 'true'})
+        # kodiutils.addListItem(LANGUAGE(32121), {'mode': 'film', 'all': 'true'})
         for sec in self.med.OttieniGeneriFilm():
             if ("uxReference" not in sec):
                 continue
@@ -452,13 +452,13 @@ class KodiMediaset(object):
         if els:
             self.__analizza_elenco(els)
             if hasmore:
-                kodiutils.addListItem(kodiutils.LANGUAGE(32130),
+                kodiutils.addListItem(LANGUAGE(32130),
                                       {'mode': 'film', 'all': 'false' if inonda else 'true',
                                        'page': page + 1 if page else 2})
         kodiutils.endScript()
 
     def elenco_kids_root(self):
-        # kodiutils.addListItem(kodiutils.LANGUAGE(32121), {'mode': 'kids', 'all': 'true'})
+        # kodiutils.addListItem(LANGUAGE(32121), {'mode': 'kids', 'all': 'true'})
         for sec in self.med.OttieniGeneriKids():
             if ("uxReference" not in sec):
                 continue
@@ -471,7 +471,7 @@ class KodiMediaset(object):
         if els:
             self.__analizza_elenco(els)
             if hasmore:
-                kodiutils.addListItem(kodiutils.LANGUAGE(32130),
+                kodiutils.addListItem(LANGUAGE(32130),
                                       {'mode': 'kids', 'all': 'false' if inonda else 'true',
                                        'page': page + 1 if page else 2})
         kodiutils.endScript()
@@ -491,7 +491,7 @@ class KodiMediaset(object):
         if els:
             self.__analizza_elenco(els)
             if hasmore:
-                kodiutils.addListItem(kodiutils.LANGUAGE(32130),
+                kodiutils.addListItem(LANGUAGE(32130),
                                       {'mode': 'documentari', 'all': 'false' if inonda else 'true',
                                        'page': page + 1 if page else 2})
         kodiutils.endScript()
@@ -502,7 +502,7 @@ class KodiMediaset(object):
         if els:
             self.__analizza_elenco(els, True)
             if hasmore:
-                kodiutils.addListItem(kodiutils.LANGUAGE(
+                kodiutils.addListItem(LANGUAGE(
                     32130), {'mode': 'sezione', 'id': sid, 'page': page + 1 if page else 2})
         kodiutils.endScript()
 
@@ -533,7 +533,7 @@ class KodiMediaset(object):
             subBrandId, sort=sort, erange=self.__imposta_range(start))
         self.__analizza_elenco(els, True)
         if len(els) == self.iperpage:
-            kodiutils.addListItem(kodiutils.LANGUAGE(32130),
+            kodiutils.addListItem(LANGUAGE(32130),
                                   {'mode': 'programma', 'sub_brand_id': subBrandId,
                                    'start': start + self.iperpage})
         kodiutils.endScript()
@@ -559,7 +559,7 @@ class KodiMediaset(object):
             kodiutils.addListItem(kodiutils.getFormattedDate(currdate),
                                   {'mode': 'guida_tv', 'id': cid,
                                    'day': staticutils.get_timestamp_midnight(currdate)})
-        # kodiutils.addListItem(kodiutils.LANGUAGE(32136),
+        # kodiutils.addListItem(LANGUAGE(32136),
         #                       {'mode': 'guida_tv', 'id': cid,
         #                       'week': staticutils.get_timestamp_midnight(dt - timedelta(days=7))})
         kodiutils.endScript()
@@ -662,14 +662,14 @@ class KodiMediaset(object):
                 res[0]['currentListing']['mediasetlisting$restartAllowed']):
             url = res[0]['currentListing']['restartUrl']
             vid = url.rpartition('/')[-1]
-            kodiutils.addListItem(kodiutils.LANGUAGE(32138) + title, {'mode': 'video', 'pid': vid},
+            kodiutils.addListItem(LANGUAGE(32138) + title, {'mode': 'video', 'pid': vid},
                                   videoInfo=infos, arts=arts, isFolder=False)
         kodiutils.endScript()
 
     def riproduci_guid(self, guid):
         res = self.med.OttieniInfoDaGuid(guid)
         if not res or 'media' not in res:
-            kodiutils.showOkDialog(kodiutils.LANGUAGE(32132), kodiutils.LANGUAGE(32136))
+            kodiutils.showOkDialog(LANGUAGE(32132),LANGUAGE(32136))
             kodiutils.setResolvedUrl(solved=False)
             return
         self.riproduci_video(res['media'][0]['pid'])
@@ -683,7 +683,7 @@ class KodiMediaset(object):
             return
         is_helper = Helper('mpd', 'com.widevine.alpha' if data['security'] else None)
         if not is_helper.check_inputstream():
-            kodiutils.showOkDialog(kodiutils.LANGUAGE(32132), kodiutils.LANGUAGE(32133))
+            kodiutils.showOkDialog(LANGUAGE(32132), LANGUAGE(32133))
             kodiutils.setResolvedUrl(solved=False)
             return
         headers = '&User-Agent={useragent}'.format(
@@ -693,11 +693,11 @@ class KodiMediaset(object):
             user = kodiutils.getSetting('email')
             password = kodiutils.getSetting('password')
             if user == '' or password == '':
-                kodiutils.showOkDialog(kodiutils.LANGUAGE(32132), kodiutils.LANGUAGE(32134))
+                kodiutils.showOkDialog(LANGUAGE(32132), LANGUAGE(32134))
                 kodiutils.setResolvedUrl(solved=False)
                 return
             if not self.med.login(user, password):
-                kodiutils.showOkDialog(kodiutils.LANGUAGE(32132), kodiutils.LANGUAGE(32135))
+                kodiutils.showOkDialog(LANGUAGE(32132), LANGUAGE(32135))
                 kodiutils.setResolvedUrl(solved=False)
                 return
             headers += '&Accept=*/*&Content-Type='

@@ -27,6 +27,7 @@ DATA_PATH_T = xbmcvfs.translatePath(DATA_PATH)
 IMAGE_PATH_T = os.path.join(PATH_T, 'resources', 'media', "")
 LANGUAGE = ADDON.getLocalizedString
 KODILANGUAGE = xbmc.getLocalizedString
+SETTING = ADDON.getSetting(setting).strip()
 
 HANDLE = int(sys.argv[1])
 
@@ -59,18 +60,18 @@ class kodiutils:
         return s
 
 
-    def getSetting(setting):
-        return ADDON.getSetting(setting).strip()
+    #def getSetting(setting):
+    #    return ADDON.getSetting(setting).strip()
 
 
     def getSettingAsBool(setting):
-        return getSetting(setting).lower() == "true"
+        return SETTING.lower() == "true"
 
 
     def getSettingAsNum(setting):
         num = 0
         try:   
-            num = float(getSetting(setting))
+            num = float(SETTING)
         except ValueError:
             pass
         return num
@@ -271,7 +272,7 @@ class KodiMediaset(object):
     def __init__(self):
         self.med = Mediaset()
         self.med.log = kodiutils.log
-        self.iperpage = int(kodiutils.getSetting('itemsperpage'))
+        self.iperpage = int(ADDON.getSetting('itemsperpage').strip)
         self.ua = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
                    '(KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36')
 

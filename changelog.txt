@@ -1,3 +1,7 @@
+[B]2.0.10[\B]
+- Fixed an issue that caused the addon to crash when selecting 'Guida TV'
+- Known issue: the 'Film' section still doesn't work
+
 [B]2.0.9[\B]
 - Switched from xbmc to xbmcvfs, so that it works in Kodi v20
 

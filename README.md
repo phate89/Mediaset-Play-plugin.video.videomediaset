@@ -7,7 +7,7 @@ This is a fork of the original plugin. The only purpose of this fork is to make 
 All the text below is from the original plugin.
 The fix was done by CristianSumma.
 
-New Manual Install: [Download ZIP](https://github.com/CristianSumma/Mediaset-Play-plugin.video.videomediaset/archive/refs/heads/master.zip)
+New Manual Install: [Download ZIP](https://github.com/CristianSumma/Mediaset-Play-plugin.video.videomediaset/releases/download/2.0.10/Mediaset-Play-plugin.video.2.0.10.zip)
 
 
 A kodi plugin to access Mediaset Play website and its content.

@@ -34,7 +34,7 @@ HANDLE = int(sys.argv[1])
 class kodiutils:
 
     def executebuiltin(func, block=False):
-        xbmc.executebuiltin(func, block)
+        xbmcvfs.executebuiltin(func, block)
 
 
     def notify(msg):
@@ -70,7 +70,7 @@ class kodiutils:
     def getSettingAsNum(setting):
         num = 0
         try:   
-            num = float(ADDON.getSetting(setting).strip())
+            num = float(ADDON.getSetting(setting).strip)
         except ValueError:
             pass
         return num
@@ -81,7 +81,7 @@ class kodiutils:
 
 
     def getKeyboard():
-        return xbmc.Keyboard()
+        return xbmcvfs.Keyboard()
 
 
     def getKeyboardText(heading, default='', hidden=False):
@@ -196,12 +196,12 @@ class kodiutils:
 
 
     def getShowID():
-        json_query = xbmc.executeJSONRPC((
+        json_query = xbmcvfs.executeJSONRPC((
             '{"jsonrpc":"2.0","method":"Player.GetItem","params":'
             '{"playerid":1,"properties":["tvshowid"]},"id":1}'))
         jsn_player_item = json.loads(json_query, 'utf-8', errors='ignore')
         if 'result' in jsn_player_item and jsn_player_item['result']['item']['type'] == 'episode':
-            json_query = xbmc.executeJSONRPC((
+            json_query = xbmcvfs.executeJSONRPC((
                 '{"jsonrpc":"2.0","id":1,"method":"VideoLibrary.GetTVShowDetails","params":'
                 '{"tvshowid":%s, "properties": ["imdbnumber"]}}') % (
                     jsn_player_item['result']['item']['tvshowid']))
@@ -213,32 +213,32 @@ class kodiutils:
 
     def containsLanguage(strlang, langs):
         for lang in strlang.split(','):
-            if xbmc.convertLanguage(lang, xbmc.ISO_639_2) in langs:
+            if xbmcvfs.convertLanguage(lang, xbmcvfs.ISO_639_2) in langs:
                 return True
         return False
 
 
     def isPlayingVideo():
-        return xbmc.Player().isPlayingVideo()
+        return xbmcvfs.Player().isPlayingVideo()
 
 
     def getInfoLabel(lbl):
-        return xbmc.getInfoLabel(lbl)
+        return xbmcvfs.getInfoLabel(lbl)
 
 
     def getRegion(r):
-        return xbmc.getRegion(r)
+        return xbmcvfs.getRegion(r)
 
 
     def getEpisodeInfo():
         episode = {}
         episode['tvshow'] = staticutils.normalizeString(
-            xbmc.getInfoLabel('VideoPlayer.TVshowtitle'))    # Show
-        episode['season'] = xbmc.getInfoLabel(
+            xbmcvfs.getInfoLabel('VideoPlayer.TVshowtitle'))    # Show
+        episode['season'] = xbmcvfs.getInfoLabel(
             'VideoPlayer.Season')                            # Season
-        episode['episode'] = xbmc.getInfoLabel(
+        episode['episode'] = xbmcvfs.getInfoLabel(
             'VideoPlayer.Episode')                           # Episode
-        file_original_path = xbmc.Player().getPlayingFile()  # Full path
+        file_original_path = xbmcvfs.Player().getPlayingFile()  # Full path
 
         # Check if season is "Special"
         if str(episode['episode']).lower().find('s') > -1:
@@ -257,10 +257,10 @@ class kodiutils:
 
 
     def getFormattedDate(dt):
-        fmt = getRegion('datelong')
+        fmt = xbmc.getRegion('datelong')
         fmt = fmt.replace("%A", KODILANGUAGE(dt.weekday() + 11))
         fmt = fmt.replace("%B", KODILANGUAGE(dt.month + 20))
-        return dt.strftime(py2_encode(fmt))
+        return dt.strftime(fmt)
 
 
     log("Starting module '%s' version '%s' with command '%s'" % (NAME, VERSION, sys.argv[2]), 1)

@@ -353,7 +353,7 @@ class KodiMediaset(object):
                                                                      prog["mediasetlisting$epgTitle"])),
                                        'infos': _gather_info(prog),
                                        'arts': _gather_art(prog),
-                                       'restartAllowed': prog['mediasetlisting$restartAllowed']}
+                                       'restartAllowed': prog.get('mediasetlisting$restartAllowed', False)}
         els = self.med.OttieniCanaliLive(sort='ShortTitle')
         for prog in els:
             if (prog['callSign'] in chans and 'tuningInstruction' in prog and

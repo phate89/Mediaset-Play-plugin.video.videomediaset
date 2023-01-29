@@ -386,7 +386,9 @@ class KodiMediaset(object):
 
     def __ottieni_vid_restart(self, guid):
         res = self.med.OttieniLiveStream(guid)
-        if ('currentListing' in res[0] and
+        if (res is not None and
+                res[0] is not None and
+                'currentListing' in res[0] and
                 res[0]['currentListing']['mediasetlisting$restartAllowed']):
             url = res[0]['currentListing']['restartUrl']
             return url.rpartition('/')[-1]

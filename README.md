@@ -1,9 +1,9 @@
 
-Kodi Mediaset Play addon
+Kodi Mediaset Infinity addon
 ===================================
 
 ### Info
-A kodi plugin to access Mediaset Play website and its content.
+A kodi plugin to access Mediaset Infinity website and its content.
 The addon was originally created by Aracnoz. I updated it almost from scratch after site changes and with new features.
 
 ### Features
@@ -20,7 +20,7 @@ The addon was originally created by Aracnoz. I updated it almost from scratch af
 
 ### Latest release
 Manual install: [Download ZIP](https://github.com/phate89/Mediaset-Play-plugin.video.videomediaset/releases)
-Require: [script.module.phate89 1.2.0](https://github.com/phate89/script.module.phate89/releases/download/1.2.0/script.module.phate89-1.2.0.zip)
+Require: [script.module.phate89 1.2.2](https://github.com/phate89/script.module.phate89/releases/download/1.2.2/script.module.phate89-1.2.2+matrix.1.zip)
 
 ### Thanks
 * To Aracnoz for the first addon version!
